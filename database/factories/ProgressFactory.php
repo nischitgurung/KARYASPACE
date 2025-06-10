@@ -3,6 +3,8 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Project;
+
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Progress>
@@ -17,7 +19,8 @@ class ProgressFactory extends Factory
     public function definition(): array
     {
         return [
-            'po'
+            'project_id'=> Project::factory(),
+             'completion_percentage' => $this->faker->numberBetween(0, 100)
             //
         ];
     }

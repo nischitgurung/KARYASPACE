@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Space extends Model
 {
     use HasFactory;
+    protected $table = 'spaces'; // Ensure correct table name
+
 
     protected $fillable = ['name', 'user_id'];
 

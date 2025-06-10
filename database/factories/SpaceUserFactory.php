@@ -3,21 +3,22 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\SpaceUser;
+use App\Models\Space;
+use App\Models\User;
+use App\Models\Role;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\SpaceUser>
- */
 class SpaceUserFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
-    public function definition(): array
+    protected $model = SpaceUser::class;
+
+    public function definition()
     {
         return [
-            //
+            'space_id' => Space::factory(),
+            'user_id' => User::factory(),
+            'role' => $this->faker->randomElement(['Admin', 'Project Manager', 'Member']),
+
         ];
     }
 }
