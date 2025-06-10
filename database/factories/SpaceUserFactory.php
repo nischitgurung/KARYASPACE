@@ -11,6 +11,7 @@ use App\Models\Role;
 class SpaceUserFactory extends Factory
 {
     protected $model = SpaceUser::class;
+   
 
     public function definition()
     {

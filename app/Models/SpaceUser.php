@@ -9,6 +9,8 @@ class SpaceUser extends Model
 {
     use HasFactory;
     protected $fillable = ['space_id', 'user_id', 'role'];
+    
+
 
     protected $table = 'space_user';
 

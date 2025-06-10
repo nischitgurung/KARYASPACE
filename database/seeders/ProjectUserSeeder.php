@@ -30,6 +30,8 @@ class ProjectUserSeeder extends Seeder
             ]);
         }
     });
+
+    
 }
 
 }
