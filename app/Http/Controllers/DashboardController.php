@@ -15,7 +15,10 @@ public function index()
     $completedTasks = Task::where('status', 'completed')->count();
     $recentTasks = Task::latest()->take(5)->get();
 
-    return view('dashboard', compact('totalProjects', 'totalTasks', 'completedTasks', 'recentTasks'));
+    return view('karya', compact('totalProjects', 'totalTasks', 'completedTasks', 'recentTasks'));
+
+
+    
 }
 
 }

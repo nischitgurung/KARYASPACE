@@ -18,3 +18,8 @@ Route::middleware([
 use App\Http\Controllers\DashboardController;
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/karya-dashboard', [DashboardController::class, 'index'])->name('dashboard');
+});
+
