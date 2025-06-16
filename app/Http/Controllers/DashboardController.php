@@ -18,4 +18,6 @@ public function index()
     return view('dashboard', compact('totalProjects', 'totalTasks', 'completedTasks', 'recentTasks'));
 }
 
+
+
 }

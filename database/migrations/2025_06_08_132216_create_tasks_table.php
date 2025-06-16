@@ -11,10 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tasks', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+    Schema::create('tasks', function (Blueprint $table) {
+    $table->id();
+    $table->string('title');
+    $table->text('description')->nullable();
+    $table->enum('status', ['pending', 'in progress', 'completed'])->default('pending');
+    $table->date('due_date')->nullable();
+    $table->unsignedBigInteger('project_id')->nullable();
+    $table->unsignedBigInteger('assigned_to')->nullable();
+    $table->timestamps();
+
+    // Optional: If you have users and projects tables
+    $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
+    $table->foreign('assigned_to')->references('id')->on('users')->onDelete('set null');
+});
+
     }
 
     /**

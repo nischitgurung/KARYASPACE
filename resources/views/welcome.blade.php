@@ -27,28 +27,27 @@
       <!-- Navbar links -->
       <div class="collapse navbar-collapse" id="navMenu">
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link active" href="#"><i class="bi bi-house-door-fill"></i> Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-stars"></i> Features</a></li>
-          <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-info-circle-fill"></i> About</a></li>
-          <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-envelope-fill"></i> Contact</a></li>
+          <li class="nav-item"><a class="nav-link active" href="#"><i class="bi bi-house-door-fill"></i> Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url('about') }}"><i class="bi bi-info-circle-fill"></i> About</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url('contact') }}"><i class="bi bi-envelope-fill"></i> Contact</a></li>
 
-          {{-- Show Login button only if login route exists --}}
-          @if (Route::has('login'))
+            {{-- Show Login link only if login route exists --}}
+            @if (Route::has('login'))
             <li class="nav-item">
-              <a class="btn btn-light text-primary ms-2" href="{{ route('login') }}">
+              <a class="nav-link" href="{{ route('login') }}">
                 <i class="bi bi-box-arrow-in-right"></i> Login
               </a>
             </li>
-          @endif
+            @endif
 
-          {{-- Show Register button only if register route exists --}}
-          @if (Route::has('register'))
+            {{-- Show Register link only if register route exists --}}
+            @if (Route::has('register'))
             <li class="nav-item">
-              <a class="btn btn-outline-light ms-2" href="{{ route('register') }}">
+              <a class="nav-link" href="{{ route('register') }}">
                 <i class="bi bi-person-plus-fill"></i> Register
               </a>
             </li>
-          @endif
+            @endif
         </ul>
       </div>
     </div>
