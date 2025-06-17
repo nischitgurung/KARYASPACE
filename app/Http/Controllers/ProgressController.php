@@ -14,14 +14,14 @@ class ProgressController extends Controller
         $this->middleware('role:Member')->only(['store', 'update']);
     }
 
-    // ✅ 1️⃣ Retrieve progress updates for a specific task
+    //  Retrieve progress updates for a specific task
     public function index(Task $task)
     {
         $this->authorizeAccess($task);
         return $task->progress()->latest()->paginate(10);
     }
 
-    // ✅ 2️⃣ Allow assigned members to add progress updates
+    // Allow assigned members to add progress updates
     public function store(Request $request, Task $task)
     {
         $this->authorizeAccess($task);
@@ -41,7 +41,7 @@ class ProgressController extends Controller
         return response()->json(['message' => 'Progress update added successfully.']);
     }
 
-    // ✅ 3️⃣ Allow assigned members to update their progress updates
+    //  Allow assigned members to update their progress updates
     public function update(Request $request, Progress $progress)
     {
         if ($progress->user_id !== Auth::id()) {
@@ -58,7 +58,7 @@ class ProgressController extends Controller
         return response()->json(['message' => 'Progress updated successfully.']);
     }
 
-    // ✅ 4️⃣ Helper function to check access rights
+    // Helper function to check access rights
     private function authorizeAccess(Task $task)
     {
         if (!Auth::user()->tasks()->where('task_id', $task->id)->exists()) {

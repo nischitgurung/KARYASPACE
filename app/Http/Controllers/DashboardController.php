@@ -16,6 +16,9 @@ public function index()
     $recentTasks = Task::latest()->take(5)->get();
 
     return view('dashboard', compact('totalProjects', 'totalTasks', 'completedTasks', 'recentTasks'));
+
+
+    
 }
 
 
