@@ -27,7 +27,6 @@
       <!-- Navbar links -->
       <div class="collapse navbar-collapse" id="navMenu">
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link active" href="#"><i class="bi bi-house-door-fill"></i> Dashboard</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url('about') }}"><i class="bi bi-info-circle-fill"></i> About</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url('contact') }}"><i class="bi bi-envelope-fill"></i> Contact</a></li>
 

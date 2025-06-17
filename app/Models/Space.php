@@ -8,16 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 class Space extends Model
 {
     use HasFactory;
-    protected $table = 'spaces'; // Ensure correct table name
 
+    protected $fillable = ['name', 'description', 'user_id'];
 
-    protected $fillable = ['name', 'user_id'];
-
-    public function users()
+    // Relationship: A space belongs to a user
+    public function user()
     {
-        return $this->belongsToMany(User::class, 'space_user')->withPivot('role');
+        return $this->belongsTo(User::class);
     }
 
+    // (Optional) Relationship: A space can have many projects
     public function projects()
     {
         return $this->hasMany(Project::class);

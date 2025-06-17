@@ -19,22 +19,33 @@ use App\Http\Controllers\DashboardController;
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
 
-Route::middleware(['auth'])->group(function () {
-    Route::get('/karya-dashboard', [DashboardController::class, 'index'])->name('dashboard');
-});
+// Route::middleware(['auth'])->group(function () {
+//     Route::get('/karya-dashboard', [DashboardController::class, 'index'])->name('dashboard');
+// });
 
 // From welcome page nav link to about.blade.php
 Route::get('/about', function () {
     return view('about');
-})->middleware(['auth'])->name('about');
+})->name('about');
 
 
 // From welcome page nav link to contact.blade.php
 Route::get('/contact', function () {
     return view('contact');
-})->middleware(['auth'])->name('contact');
+})->name('contact');
 
-// From dashboard page nav link to space.blade.php
-Route::get('/space', function () {
-    return view('space');
-})->middleware(['auth'])->name('space');
+use App\Http\Controllers\SpaceController;
+
+Route::resource('spaces', SpaceController::class);
+
+use App\Http\Controllers\ProjectController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::resource('spaces', SpaceController::class);
+    Route::get('/spaces/{space}/projects/create', [ProjectController::class, 'create'])->name('spaces.projects.create');
+    Route::post('/spaces/{space}/projects', [ProjectController::class, 'store'])->name('spaces.projects.store');
+});
+//test
+Route::get('/space-test', [App\Http\Controllers\SpaceController::class, 'index']);
+Route::get('/spaces/{space}', [SpaceController::class, 'show'])->name('spaces.show');
+

@@ -11,10 +11,10 @@ class Project extends Model
 
     protected $fillable = ['name', 'description', 'space_id', 'user_id', 'completion_percentage'];
 
-    public function space()
-    {
-        return $this->belongsTo(Space::class);
-    }
+public function space() {
+    return $this->belongsTo(Space::class);
+}
+
 
     public function users()
     {

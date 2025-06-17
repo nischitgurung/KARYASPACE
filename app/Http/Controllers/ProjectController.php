@@ -8,57 +8,27 @@ use Illuminate\Support\Facades\Auth;
 
 class ProjectController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('role:Admin')->only(['store', 'update', 'destroy']);
-    }
+// app/Http/Controllers/ProjectController.php
 
-    // Retrieve projects that the user has access to
-    public function index()
-    {
-        $user = Auth::user();
-        return Project::whereIn('space_id', $user->spaces->pluck('id'))->paginate(10);
-    }
+public function create(Space $space)
+{
+    return view('projects.create', compact('space'));
+}
 
-    //  Ensure only Admins can create projects within their space
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
+public function store(Request $request, Space $space)
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'description' => 'nullable|string',
+    ]);
 
-        if (!$request->user()->spaces()->wherePivot('role', 'Admin')->exists()) {
-            abort(403, 'Only Admins can create projects.');
-        }
+    $space->projects()->create([
+        'name' => $request->name,
+        'description' => $request->description,
+    ]);
 
-        return Project::create($request->all());
-    }
+    return redirect()->route('spaces.index')->with('success', 'Project created successfully!');
+}
 
-    // Restrict project updates to Admins only
-    public function update(Request $request, Project $project)
-    {
-        if (!$request->user()->spaces()->wherePivot('role', 'Admin')->exists()) {
-            abort(403, 'Only Admins can modify projects.');
-        }
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
-
-        $project->update($request->all());
-        return response()->json(['message' => 'Project updated successfully.']);
-    }
-
-    //  Soft delete a project instead of permanent deletion
-    public function destroy(Project $project)
-    {
-        if (!$request->user()->spaces()->wherePivot('role', 'Admin')->exists()) {
-            abort(403, 'Only Admins can delete projects.');
-        }
-
-        $project->delete(); // Soft delete enabled
-        return response()->json(['message' => 'Project archived successfully.']);
-    }
 }

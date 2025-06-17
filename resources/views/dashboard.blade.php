@@ -22,11 +22,10 @@
         <!-- Desktop: No profile/logout links visible, only hamburger toggler triggers collapse -->
         <div class="collapse navbar-collapse d-lg-none" id="navbarUserLinks">
             <ul class="navbar-nav ms-auto">
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url('space') }}">
-                    <i class="bi bi-rocket-takeoff-fill"></i> Space
-                </a>
-            </li>
+      <li class="nav-item">
+    <a class="nav-link" href="{{ route('spaces.index') }}"><i class="bi bi-rocket-takeoff-fill"></i> Spaces</a>
+</li>
+
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('profile.show') }}">
                         <i class="bi bi-person"></i> Profile
