@@ -1,44 +1,53 @@
 <x-guest-layout>
-    <!-- Centered container for the register card -->
     <div class="container d-flex justify-content-center align-items-center" style="min-height: 90vh;">
-        <!-- Register card with shadow and padding -->
-        <div class="card shadow p-4 mx-auto" style="width: 100%; max-width: 420px;">
-            <!-- Register title with icon -->
+        <div class="card shadow-sm p-4 w-100" style="max-width: 420px;">
+            <!-- Title -->
             <div class="text-center mb-4">
-                <h3 class="mt-3 text-primary"><i class="bi bi-person-plus"></i> Register</h3>
+                <h3 class="text-primary"><i class="bi bi-person-plus me-1"></i> Register</h3>
             </div>
 
-            <!-- Validation Errors: displays form validation errors -->
+            <!-- Validation Errors -->
             <x-validation-errors class="alert alert-danger mb-3" />
 
-            <!-- Register form -->
+            <!-- Form -->
             <form method="POST" action="{{ route('register') }}">
                 @csrf
 
-                <!-- Name input field -->
+                <!-- Name -->
                 <div class="mb-3">
-                    <label for="name" class="form-label">Name</label>
-                    <input id="name" class="form-control" type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name">
+                    <label for="name" class="form-label">Full Name</label>
+                    <input id="name" class="form-control" type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name" placeholder="John Doe">
                 </div>
 
-                <!-- Email Address input field -->
+                <!-- Email -->
                 <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <input id="email" class="form-control" type="email" name="email" value="{{ old('email') }}" required autocomplete="username">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input id="email" class="form-control" type="email" name="email" value="{{ old('email') }}" required autocomplete="username" placeholder="you@example.com">
                 </div>
 
-                <!-- Password input field -->
-                <div class="mb-3">
+                <!-- Password -->
+                <div class="mb-3 position-relative">
                     <label for="password" class="form-label">Password</label>
-                    <input id="password" class="form-control" type="password" name="password" required autocomplete="new-password">
+                    <div class="input-group">
+                        <input id="password" class="form-control" type="password" name="password" required autocomplete="new-password" placeholder="••••••••">
+                        <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                            <i class="bi bi-eye-slash" id="eyeIcon"></i>
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Confirm Password input field -->
-                <div class="mb-3">
+                <!-- Confirm Password -->
+                <div class="mb-3 position-relative">
                     <label for="password_confirmation" class="form-label">Confirm Password</label>
-                    <input id="password_confirmation" class="form-control" type="password" name="password_confirmation" required autocomplete="new-password">
+                    <div class="input-group">
+                        <input id="password_confirmation" class="form-control" type="password" name="password_confirmation" required autocomplete="new-password" placeholder="••••••••">
+                        <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                            <i class="bi bi-eye-slash" id="eyeConfirmIcon"></i>
+                        </button>
+                    </div>
                 </div>
 
+                <!-- Terms Agreement -->
                 @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
                     <div class="mb-3 form-check">
                         <input class="form-check-input" type="checkbox" name="terms" id="terms" required>
@@ -51,7 +60,7 @@
                     </div>
                 @endif
 
-                <!-- Register button -->
+                <!-- Submit & Login -->
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <a href="{{ route('login') }}" class="small text-decoration-none">
                         Already registered?
@@ -64,7 +73,32 @@
         </div>
     </div>
 
-    <!-- Bootstrap CSS and Bootstrap Icons CDN links -->
+    <!-- Bootstrap & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Show/Hide Password Script -->
+    <script>
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        const eyeIcon = document.getElementById('eyeIcon');
+
+        togglePassword.addEventListener('click', () => {
+            const isHidden = passwordInput.type === 'password';
+            passwordInput.type = isHidden ? 'text' : 'password';
+            eyeIcon.classList.toggle('bi-eye');
+            eyeIcon.classList.toggle('bi-eye-slash');
+        });
+
+        const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+        const confirmPasswordInput = document.getElementById('password_confirmation');
+        const eyeConfirmIcon = document.getElementById('eyeConfirmIcon');
+
+        toggleConfirmPassword.addEventListener('click', () => {
+            const isHidden = confirmPasswordInput.type === 'password';
+            confirmPasswordInput.type = isHidden ? 'text' : 'password';
+            eyeConfirmIcon.classList.toggle('bi-eye');
+            eyeConfirmIcon.classList.toggle('bi-eye-slash');
+        });
+    </script>
 </x-guest-layout>
