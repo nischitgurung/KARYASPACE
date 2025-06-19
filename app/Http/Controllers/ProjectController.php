@@ -130,4 +130,18 @@ class ProjectController extends Controller
     return view('projects.index', compact('space', 'projects'));
 }
 
+public function assignManager(Request $request, $projectId)
+{
+    $request->validate([
+        'project_manager_id' => 'nullable|exists:users,id',
+    ]);
+
+    $project = Project::findOrFail($projectId);
+    $project->project_manager_id = $request->input('project_manager_id');
+    $project->save();
+
+    return redirect()->back()->with('success', 'Project manager assigned successfully.');
+}
+
+
 }

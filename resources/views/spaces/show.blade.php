@@ -81,6 +81,29 @@
                   </span>
                 @endif
               </div>
+
+              <!-- Project Manager Assignment Form -->
+              <div class="mt-3">
+                <form method="POST" action="{{ route('projects.assignManager', $project->id) }}" class="d-flex gap-2 align-items-center">
+                  @csrf
+                  @method('PATCH')
+
+                  <label for="project_manager_{{ $project->id }}" class="me-2 mb-0 small fw-semibold">Project Manager:</label>
+
+                  <select name="project_manager_id" id="project_manager_{{ $project->id }}" class="form-select form-select-sm" style="width: 200px;">
+                    <option value="">-- Select Manager --</option>
+                    @foreach($users as $user)
+                      <option value="{{ $user->id }}" {{ $project->project_manager_id == $user->id ? 'selected' : '' }}>
+                        {{ $user->name }}
+                      </option>
+                    @endforeach
+                  </select>
+
+                  <button type="submit" class="btn btn-sm btn-outline-success" title="Assign Project Manager">
+                    <i class="bi bi-check-lg"></i> Assign
+                  </button>
+                </form>
+              </div>
             </div>
 
             <div class="btn-group" role="group" aria-label="Project actions">
@@ -111,6 +134,20 @@
     </div>
   </div>
 
+  <!-- Toast Notification -->
+  @if(session('success'))
+    <div aria-live="polite" aria-atomic="true" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080;">
+      <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body">
+            {{ session('success') }}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    </div>
+  @endif
+
   <!-- Footer -->
   <footer class="bg-primary text-white text-center py-3 mt-5 position-fixed bottom-0 w-100">
     <p class="mb-0">&copy; 2025 KaryaSpace. All rights reserved.</p>
@@ -118,5 +155,16 @@
 
   <!-- Bootstrap JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  @if(session('success'))
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const toastEl = document.getElementById('successToast');
+      const toast = new bootstrap.Toast(toastEl);
+      toast.show();
+    });
+  </script>
+  @endif
+
 </body>
 </html>

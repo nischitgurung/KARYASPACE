@@ -9,15 +9,20 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
-        Schema::create('projects', function (Blueprint $table) {
-            $table->id();
-            // other columns...
-            $table->foreignId('space_id')->constrained()->onDelete('cascade');
-            $table->timestamps();
-        });
-    }  // <-- THIS closing bracket was missing
+  public function up(): void
+{
+    Schema::create('projects', function (Blueprint $table) {
+        $table->id();
+        // other columns...
+
+        $table->foreignId('space_id')->constrained()->onDelete('cascade');
+
+        // Add project_manager_id referencing users table, nullable if you want
+        $table->foreignId('project_manager_id')->nullable()->constrained('users')->onDelete('set null');
+
+        $table->timestamps();
+    });
+}
 
     /**
      * Reverse the migrations.

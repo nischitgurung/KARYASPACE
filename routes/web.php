@@ -73,3 +73,8 @@ Route::middleware('auth')->group(function () {
 Route::resource('spaces.projects', ProjectController::class);
 Route::get('/spaces/{space}/projects', [ProjectController::class, 'index'])->name('spaces.projects.index');
 
+
+
+
+Route::patch('/projects/{project}/assign-manager', [ProjectController::class, 'assignManager'])->name('projects.assignManager');
+
