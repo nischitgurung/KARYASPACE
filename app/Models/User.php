@@ -69,5 +69,15 @@ class User extends Authenticatable
   return $this->hasMany(Space::class);
 
 }
+public function managedProjects()
+{
+    return $this->hasMany(Project::class, 'project_manager_id');
+}
+
+public function projects()
+{
+    return $this->belongsToMany(Project::class, 'project_user');
+}
+
 
 }

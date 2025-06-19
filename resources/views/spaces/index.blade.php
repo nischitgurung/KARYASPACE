@@ -1,3 +1,4 @@
+{{-- This page opens up when clicking the spaces --}}
 <!DOCTYPE html>
 <html lang="en">
 <head>

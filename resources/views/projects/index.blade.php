@@ -1,4 +1,3 @@
-resources/views/projects/index.blade.php
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -60,27 +59,51 @@ resources/views/projects/index.blade.php
   @if($space->projects->isEmpty())
     <div class="alert alert-info">No projects found in this space. Create one below!</div>
   @else
-    @foreach($space->projects as $project)
-      <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
-        <div>
-          <h5 class="mb-1">{{ $project->name }}</h5>
-          <p class="mb-0 text-muted">{{ $project->description ?? 'No description provided.' }}</p>
-        </div>
-        <div class="d-flex gap-2">
-          <a href="{{ route('spaces.projects.edit', [$space->id, $project->id]) }}" class="btn btn-sm btn-outline-primary">
-            <i class="bi bi-pencil"></i> Edit
-          </a>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      @foreach($space->projects as $project)
+        <div class="col">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">{{ $project->name }}</h5>
+              <p class="card-text text-muted mb-3">{{ $project->description ?? 'No description provided.' }}</p>
 
-          <form action="{{ route('spaces.projects.destroy', [$space->id, $project->id]) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this project?');">
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="btn btn-sm btn-outline-danger">
-              <i class="bi bi-trash"></i> Delete
-            </button>
-          </form>
+              <ul class="list-unstyled mb-3">
+                <li><strong>Deadline:</strong> {{ $project->deadline ? \Carbon\Carbon::parse($project->deadline)->format('M d, Y') : 'Not set' }}</li>
+                <li>
+                  <strong>Priority:</strong>
+                  @php
+                    $priorityColors = [
+                      'low' => 'success',
+                      'medium' => 'warning',
+                      'high' => 'danger',
+                      'urgent' => 'dark',
+                    ];
+                    $priority = strtolower($project->priority ?? 'low');
+                    $badgeColor = $priorityColors[$priority] ?? 'secondary';
+                    $priorityLabel = ucfirst($priority);
+                  @endphp
+                  <span class="badge bg-{{ $badgeColor }}">{{ $priorityLabel }}</span>
+                </li>
+              </ul>
+
+              <div class="mt-auto d-flex gap-2">
+                <a href="{{ route('spaces.projects.edit', [$space->id, $project->id]) }}" class="btn btn-sm btn-outline-primary">
+                  <i class="bi bi-pencil"></i> Edit
+                </a>
+
+                <form action="{{ route('spaces.projects.destroy', [$space->id, $project->id]) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this project?');" class="mb-0">
+                  @csrf
+                  @method('DELETE')
+                  <button type="submit" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-trash"></i> Delete
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    @endforeach
+      @endforeach
+    </div>
   @endif
 
   <!-- Create New Project -->

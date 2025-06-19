@@ -65,3 +65,10 @@ Route::prefix('spaces/{space}')->group(function () {
 Route::resource('spaces.projects', ProjectController::class)->only(['create', 'store']);
 
 Route::resource('spaces.projects', ProjectController::class);
+
+Route::middleware('auth')->group(function () {
+    Route::post('projects/{project}/employees', [ProjectController::class, 'addEmployee'])->name('projects.employees.add');
+    Route::delete('projects/{project}/employees/{user}', [ProjectController::class, 'removeEmployee'])->name('projects.employees.remove');
+});
+Route::resource('spaces.projects', ProjectController::class);
+

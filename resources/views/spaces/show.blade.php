@@ -18,15 +18,7 @@
         <i class="bi bi-kanban-fill text-primary me-2 fs-3"></i>
         <span>KaryaSpace</span>
       </a>
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarUserLinks"
-        aria-controls="navbarUserLinks"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarUserLinks">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarUserLinks">
@@ -39,12 +31,7 @@
           <li class="nav-item">
             <form method="POST" action="{{ route('logout') }}">
               @csrf
-              <button
-                class="nav-link btn btn-link text-danger m-0 p-0"
-                type="submit"
-                style="text-decoration: none;"
-                aria-label="Logout"
-              >
+              <button class="nav-link btn btn-link text-danger m-0 p-0" type="submit" style="text-decoration: none;">
                 <i class="bi bi-box-arrow-right me-1"></i> Logout
               </button>
             </form>
@@ -70,28 +57,41 @@
     @else
       <ul class="list-group mt-3 shadow-sm">
         @foreach($space->projects as $project)
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <span>{{ $project->name }}</span>
+          <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="flex-grow-1">
+              <strong>{{ $project->name }}</strong><br>
+              <small class="text-muted">{{ $project->description ?? 'No description provided.' }}</small>
+
+              <div class="mt-2 small">
+                @if($project->deadline)
+                  <span class="me-3">
+                    <i class="bi bi-calendar-event text-primary me-1"></i>
+                    Deadline: {{ \Carbon\Carbon::parse($project->deadline)->format('M d, Y') }}
+                  </span>
+                @endif
+
+                @if($project->priority)
+                  @php
+                    $priorityColors = ['high' => 'danger', 'medium' => 'warning', 'low' => 'success'];
+                    $priority = strtolower($project->priority);
+                    $badgeColor = $priorityColors[$priority] ?? 'secondary';
+                  @endphp
+                  <span class="badge bg-{{ $badgeColor }}">
+                    <i class="bi bi-exclamation-circle me-1"></i> {{ ucfirst($project->priority) }} Priority
+                  </span>
+                @endif
+              </div>
+            </div>
+
             <div class="btn-group" role="group" aria-label="Project actions">
-              <a
-                href="{{ route('spaces.projects.edit', [$space->id, $project->id]) }}"
-                class="btn btn-sm btn-outline-primary"
-                title="Edit Project"
-              >
+              <a href="{{ route('spaces.projects.edit', [$space->id, $project->id]) }}" class="btn btn-sm btn-outline-primary">
                 <i class="bi bi-pencil"></i> Edit
               </a>
-              <form
-                action="{{ route('spaces.projects.destroy', [$space->id, $project->id]) }}"
-                method="POST"
-                onsubmit="return confirm('Are you sure you want to delete this project?');"
-              >
+              <form action="{{ route('spaces.projects.destroy', [$space->id, $project->id]) }}" method="POST"
+                onsubmit="return confirm('Are you sure you want to delete this project?');">
                 @csrf
                 @method('DELETE')
-                <button
-                  type="submit"
-                  class="btn btn-sm btn-outline-danger"
-                  title="Delete Project"
-                >
+                <button type="submit" class="btn btn-sm btn-outline-danger">
                   <i class="bi bi-trash"></i> Delete
                 </button>
               </form>
@@ -116,7 +116,7 @@
     <p class="mb-0">&copy; 2025 KaryaSpace. All rights reserved.</p>
   </footer>
 
-  <!-- Bootstrap JS Bundle (includes Popper) -->
+  <!-- Bootstrap JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

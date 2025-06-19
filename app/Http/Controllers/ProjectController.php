@@ -1,73 +1,124 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\Space;
 
-use Illuminate\Http\Request;
+use App\Models\Space;
 use App\Models\Project;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ProjectController extends Controller
 {
-// app/Http/Controllers/ProjectController.php
-
+    // Show form to create a new project inside a space
     public function create(Space $space)
     {
         return view('projects.create', compact('space'));
     }
-public function store(Request $request, Space $space)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'description' => 'nullable|string',
-    ]);
 
-    $space->projects()->create([
-        'name' => $request->name,
-        'description' => $request->description,
-    ]);
+    // Store new project with deadline and priority
+    public function store(Request $request, Space $space)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'deadline' => 'required|date',
+            'priority' => 'required|in:low,medium,high,urgent',
+        ]);
 
-    return redirect()->route('spaces.index')->with('success', 'Project created successfully!');
-}
-public function edit(Space $space, Project $project)
-{
-    // Optional: check if the project belongs to the space to prevent URL tampering
-    if ($project->space_id !== $space->id) {
-        abort(404);
-    }
-    
-    return view('projects.edit', compact('space', 'project'));
-}
-public function update(Request $request, Space $space, Project $project)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'description' => 'nullable|string',
-    ]);
+        $space->projects()->create([
+            'name' => $request->name,
+            'description' => $request->description,
+            'deadline' => $request->deadline,
+            'priority' => $request->priority,
+            'project_manager_id' => Auth::id(),
+        ]);
 
-    if ($project->space_id !== $space->id) {
-        abort(404);
+        return redirect()->route('spaces.projects.index', $space)->with('success', 'Project created successfully!');
     }
 
-    $project->update([
-        'name' => $request->name,
-        'description' => $request->description,
-    ]);
+    // Show edit form for a project within a space
+    public function edit(Space $space, Project $project)
+    {
+        if ($project->space_id !== $space->id) {
+            abort(404);
+        }
 
-    return redirect()->route('spaces.show', $space)->with('success', 'Project updated successfully!');
-}
-public function destroy(Space $space, Project $project)
-{
-    // Optional: confirm the project belongs to the space
-    if ($project->space_id !== $space->id) {
-        abort(404);
+        return view('projects.edit', compact('space', 'project'));
     }
 
-    $project->delete();
+    // Update project details including deadline and priority
+    public function update(Request $request, Space $space, Project $project)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'deadline' => 'required|date',
+            'priority' => 'required|in:low,medium,high,urgent',
+        ]);
 
-    return redirect()->route('spaces.show', $space)->with('success', 'Project deleted successfully!');
-}
+        if ($project->space_id !== $space->id) {
+            abort(404);
+        }
 
+        $project->update([
+            'name' => $request->name,
+            'description' => $request->description,
+            'deadline' => $request->deadline,
+            'priority' => $request->priority,
+        ]);
 
+        return redirect()->route('spaces.show', $space)->with('success', 'Project updated successfully!');
+    }
 
+    // Delete a project
+    public function destroy(Space $space, Project $project)
+    {
+        if ($project->space_id !== $space->id) {
+            abort(404);
+        }
+
+        $project->delete();
+
+        return redirect()->route('spaces.show', $space)->with('success', 'Project deleted successfully!');
+    }
+
+    // Add an employee to the project (only project manager allowed)
+    public function addEmployee(Space $space, Project $project, Request $request)
+    {
+        if ($project->space_id !== $space->id) {
+            abort(404);
+        }
+
+        if ($project->project_manager_id !== Auth::id()) {
+            abort(403, 'Unauthorized: Only the project manager can add employees.');
+        }
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        // Attach employee if not already attached
+        if (!$project->employees()->where('user_id', $request->user_id)->exists()) {
+            $project->employees()->attach($request->user_id);
+        }
+
+        return back()->with('success', 'Employee added to project.');
+    }
+
+    // Remove an employee from the project (only project manager allowed)
+    public function removeEmployee(Space $space, Project $project, User $user)
+    {
+        if ($project->space_id !== $space->id) {
+            abort(404);
+        }
+
+        if ($project->project_manager_id !== Auth::id()) {
+            abort(403, 'Unauthorized: Only the project manager can remove employees.');
+        }
+
+        $project->employees()->detach($user->id);
+
+        return back()->with('success', 'Employee removed from project.');
+    }
 }

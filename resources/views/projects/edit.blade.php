@@ -64,7 +64,7 @@
 @endif
 
 <!-- Main Page Content -->
-<div class="container py-5">
+<div class="container py-5" style="max-width: 600px;">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Edit Project</h2>
     <a href="{{ route('spaces.projects.index', $space->id) }}" class="btn btn-outline-secondary">
@@ -115,6 +115,44 @@
       >{{ old('description', $project->description) }}</textarea>
       <div class="invalid-feedback">
         Please enter a valid description.
+      </div>
+    </div>
+
+    <!-- Deadline -->
+    <div class="mb-3">
+      <label for="deadline" class="form-label">Deadline</label>
+      <input
+        type="date"
+        name="deadline"
+        id="deadline"
+        class="form-control @error('deadline') is-invalid @enderror"
+        value="{{ old('deadline', optional($project->deadline)->format('Y-m-d')) }}"
+      >
+      <div class="invalid-feedback">
+        Please select a valid deadline.
+      </div>
+    </div>
+
+    <!-- Priority -->
+    <div class="mb-3">
+      <label for="priority" class="form-label">Priority</label>
+      <select
+        name="priority"
+        id="priority"
+        class="form-select @error('priority') is-invalid @enderror"
+      >
+        @php
+          $priorities = ['low', 'medium', 'high', 'urgent'];
+          $selectedPriority = old('priority', strtolower($project->priority ?? 'low'));
+        @endphp
+        @foreach($priorities as $priority)
+          <option value="{{ $priority }}" {{ $selectedPriority === $priority ? 'selected' : '' }}>
+            {{ ucfirst($priority) }}
+          </option>
+        @endforeach
+      </select>
+      <div class="invalid-feedback">
+        Please select a priority.
       </div>
     </div>
 
