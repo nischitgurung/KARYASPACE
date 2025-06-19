@@ -1,41 +1,67 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\SpaceController;
-use App\Http\Controllers\ProjectController;
-use resources\views\welcome;
 
 Route::get('/', function () {
-    return view('welcome'); // Remove `view:` prefix
+    return view('welcome');
 });
-
-
-Route::get('/about', function () {
-    return view('about');
-})->name('about');
-
-Route::get('/contact', function () {
-    return ('contact');
-})->name('contact');
 
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
+});
+use App\Http\Controllers\DashboardController;
 
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
 
+// Route::middleware(['auth'])->group(function () {
+//     Route::get('/karya-dashboard', [DashboardController::class, 'index'])->name('dashboard');
+// });
+
+// From welcome page nav link to about.blade.php
+Route::get('/about', function () {
+    return view('about');
+})->name('about');
+
+
+// From welcome page nav link to contact.blade.php
+Route::get('/contact', function () {
+    return view('contact');
+})->name('contact');
+
+use App\Http\Controllers\SpaceController;
+
+Route::resource('spaces', SpaceController::class);
+
+use App\Http\Controllers\ProjectController;
+
+Route::middleware(['auth'])->group(function () {
     Route::resource('spaces', SpaceController::class);
-
     Route::get('/spaces/{space}/projects/create', [ProjectController::class, 'create'])->name('spaces.projects.create');
     Route::post('/spaces/{space}/projects', [ProjectController::class, 'store'])->name('spaces.projects.store');
+});
+//test
+Route::get('/space-test', [App\Http\Controllers\SpaceController::class, 'index']);
+Route::get('/spaces/{space}', [SpaceController::class, 'show'])->name('spaces.show');
 
-    // If you want, move the show route inside auth middleware too
-    Route::get('/spaces/{space}', [SpaceController::class, 'show'])->name('spaces.show');
+;
 
+Route::get('/spaces/{space}/projects/create', [ProjectController::class, 'create'])->name('projects.create');
+Route::post('/spaces/{space}/projects', [ProjectController::class, 'store'])->name('projects.store');
+
+Route::resource('spaces.projects', ProjectController::class);
+
+Route::prefix('spaces/{space}')->group(function () {
+    Route::get('/projects/create', [ProjectController::class, 'create'])->name('projects.create');
+    Route::post('/projects', [ProjectController::class, 'store'])->name('projects.store');
 });
 
-// Test route (should probably be protected or removed)
-Route::get('/space-test', [SpaceController::class, 'index'])->middleware('auth');
+
+Route::resource('spaces.projects', ProjectController::class)->only(['create', 'store']);
+
+Route::resource('spaces.projects', ProjectController::class);

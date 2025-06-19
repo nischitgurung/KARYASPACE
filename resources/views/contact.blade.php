@@ -19,25 +19,21 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navMenu">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="{{ url('/') }}"><i class="bi bi-house-door-fill"></i> Dashboard</a></li>
-                    
+                <ul class="navbar-nav ms-auto">                    
                     <li class="nav-item"><a class="nav-link" href="{{ url('about') }}"><i class="bi bi-info-circle-fill"></i> About</a></li>
                     <li class="nav-item"><a class="nav-link active" href="{{ url('contact') }}"><i class="bi bi-envelope-fill"></i> Contact</a></li>
-                    @if (Route::has('login'))
-                        <li class="nav-item">
-                            <a class="btn btn-light text-primary ms-2" href="{{ route('login') }}">
-                                <i class="bi bi-box-arrow-in-right"></i> Login
-                            </a>
-                        </li>
-                    @endif
-                    @if (Route::has('register'))
-                        <li class="nav-item">
-                            <a class="btn btn-outline-light ms-2" href="{{ route('register') }}">
-                                <i class="bi bi-person-plus-fill"></i> Register
-                            </a>
-                        </li>
-                    @endif
+                    <li class="nav-item">
+                <a class="nav-link d-flex align-items-center gap-1" href="{{ route('login') }}">
+                  <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> Login
+                </a>
+              </li>
+              @if (Route::has('register'))
+                <li class="nav-item">
+                  <a class="nav-link d-flex align-items-center gap-1" href="{{ route('register') }}">
+                    <i class="bi bi-person-plus-fill" aria-hidden="true"></i> Register
+                  </a>
+                </li>
+              @endif
                 </ul>
             </div>
         </div>

@@ -11,11 +11,10 @@ return new class extends Migration
      */
 public function up()
 {
-    Schema::table('spaces', function (Blueprint $table) {
-        $table->unsignedBigInteger('user_id')->after('id');
-
-        // Optional but recommended
-        $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+    Schema::table('spaces', function (Illuminate\Database\Schema\Blueprint $table) {
+        if (!Schema::hasColumn('spaces', 'user_id')) {
+            $table->unsignevghdBigInteger('user_id');
+        }
     });
 }
 
@@ -26,6 +25,5 @@ public function down()
         $table->dropColumn('user_id');
     });
 }
-
 
 };
