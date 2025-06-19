@@ -71,4 +71,5 @@ Route::middleware('auth')->group(function () {
     Route::delete('projects/{project}/employees/{user}', [ProjectController::class, 'removeEmployee'])->name('projects.employees.remove');
 });
 Route::resource('spaces.projects', ProjectController::class);
+Route::get('/spaces/{space}/projects', [ProjectController::class, 'index'])->name('spaces.projects.index');
 

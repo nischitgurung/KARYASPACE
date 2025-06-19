@@ -121,4 +121,13 @@ class ProjectController extends Controller
 
         return back()->with('success', 'Employee removed from project.');
     }
+    public function index(Space $space)
+{
+    // Fetch all projects belonging to the given space
+    $projects = $space->projects()->get();
+
+    // Return a view to display the projects list
+    return view('projects.index', compact('space', 'projects'));
+}
+
 }
