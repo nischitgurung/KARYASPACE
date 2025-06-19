@@ -13,8 +13,13 @@ return new class extends Migration
     {
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
-            // other columns...
+
+            // Foreign key to the spaces table
             $table->foreignId('space_id')->constrained()->onDelete('cascade');
+
+            // Optional project manager (references users table)
+            $table->foreignId('project_manager_id')->nullable()->constrained('users')->onDelete('set null');
+
             $table->timestamps();
         });
     }
@@ -27,3 +32,5 @@ return new class extends Migration
         Schema::dropIfExists('projects');
     }
 };
+
+

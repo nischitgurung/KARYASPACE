@@ -70,7 +70,7 @@
       </div>
     @endif
 
-<form method="POST" action="{{ route('spaces.projects.store', $space) }}">
+    <form method="POST" action="{{ route('spaces.projects.store', $space) }}">
       @csrf
 
       <div class="mb-3">
@@ -99,6 +99,45 @@
           placeholder="Enter project description (optional)"
         >{{ old('description') }}</textarea>
       </div>
+
+      <!-- Deadline -->
+      <div class="mb-3">
+        <label for="deadline" class="form-label">
+          Deadline <span class="text-danger">*</span>
+        </label>
+        <input
+          type="date"
+          class="form-control"
+          id="deadline"
+          name="deadline"
+          value="{{ old('deadline') }}"
+          required
+        >
+      </div>
+
+      <!-- Priority -->
+      <div class="mb-3">
+        <label for="priority" class="form-label">
+          Priority <span class="text-danger">*</span>
+        </label>
+        <select
+          class="form-select"
+          id="priority"
+          name="priority"
+          required
+        >
+          <option value="" disabled {{ old('priority') ? '' : 'selected' }}>Select Priority</option>
+          <option value="low" {{ old('priority') == 'low' ? 'selected' : '' }}>Low</option>
+          <option value="medium" {{ old('priority') == 'medium' ? 'selected' : '' }}>Medium</option>
+          <option value="high" {{ old('priority') == 'high' ? 'selected' : '' }}>High</option>
+          <option value="urgent" {{ old('priority') == 'urgent' ? 'selected' : '' }}>Urgent</option>
+        </select>
+      </div>
+
+      {{-- 
+        No need to add project_manager_id here, 
+        assign it automatically in controller as auth user.
+      --}}
 
       <div class="d-flex gap-2">
         <button type="submit" class="btn btn-primary" title="Create this project">
