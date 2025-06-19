@@ -77,4 +77,5 @@ Route::get('/spaces/{space}/projects', [ProjectController::class, 'index'])->nam
 
 
 Route::patch('/projects/{project}/assign-manager', [ProjectController::class, 'assignManager'])->name('projects.assignManager');
+Route::get('/spaces/{space}', [SpaceController::class, 'show'])->name('spaces.show');
 

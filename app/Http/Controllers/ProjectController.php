@@ -34,7 +34,7 @@ class ProjectController extends Controller
             'project_manager_id' => Auth::id(),
         ]);
 
-        return redirect()->route('spaces.projects.index', $space)->with('success', 'Project created successfully!');
+return redirect()->route('spaces.show', $space->id)->with('success', 'Project created successfully!');
     }
 
     // Show edit form for a project within a space
