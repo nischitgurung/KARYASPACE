@@ -1,4 +1,4 @@
-{{-- resources/views/projects/index.blade.php --}}
+resources/views/projects/index.blade.php
 <!DOCTYPE html>
 <html lang="en">
 <head>

@@ -9,10 +9,12 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
- public function up()
+public function up()
 {
-    Schema::table('spaces', function (Blueprint $table) {
-        $table->foreignId('user_id')->constrained()->onDelete('cascade');
+    Schema::table('spaces', function (Illuminate\Database\Schema\Blueprint $table) {
+        if (!Schema::hasColumn('spaces', 'user_id')) {
+            $table->unsignedBigInteger('user_id');
+        }
     });
 }
 

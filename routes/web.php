@@ -49,3 +49,19 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/space-test', [App\Http\Controllers\SpaceController::class, 'index']);
 Route::get('/spaces/{space}', [SpaceController::class, 'show'])->name('spaces.show');
 
+;
+
+Route::get('/spaces/{space}/projects/create', [ProjectController::class, 'create'])->name('projects.create');
+Route::post('/spaces/{space}/projects', [ProjectController::class, 'store'])->name('projects.store');
+
+Route::resource('spaces.projects', ProjectController::class);
+
+Route::prefix('spaces/{space}')->group(function () {
+    Route::get('/projects/create', [ProjectController::class, 'create'])->name('projects.create');
+    Route::post('/projects', [ProjectController::class, 'store'])->name('projects.store');
+});
+
+
+Route::resource('spaces.projects', ProjectController::class)->only(['create', 'store']);
+
+Route::resource('spaces.projects', ProjectController::class);
