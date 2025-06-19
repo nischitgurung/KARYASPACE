@@ -5,14 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Space;
 use Illuminate\Support\Facades\Auth;
+use resources\views\dashboard;
 
 class SpaceController extends Controller
 {
     // Show list of all spaces owned by the logged-in user
     public function index() {
-        $spaces = Auth::user()->spaces;  // get spaces of logged-in user
-        return view('spaces.index', compact('spaces'));
-    }
+    $space = Auth::user()->spaces()->first(); // or any logic to choose space
+    return view('dashboard', compact('space'));
+}
 
     // Show form to create a new space
     public function create() {

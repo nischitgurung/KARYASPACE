@@ -9,10 +9,13 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
- public function up()
+public function up()
 {
     Schema::table('spaces', function (Blueprint $table) {
-        $table->foreignId('user_id')->constrained()->onDelete('cascade');
+        $table->unsignedBigInteger('user_id')->after('id');
+
+        // Optional but recommended
+        $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
     });
 }
 
@@ -23,5 +26,6 @@ public function down()
         $table->dropColumn('user_id');
     });
 }
+
 
 };
