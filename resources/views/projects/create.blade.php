@@ -103,7 +103,7 @@
       <!-- Deadline -->
       <div class="mb-3">
         <label for="deadline" class="form-label">
-          Deadline <span class="text-danger">*</span>
+          Deadline 
         </label>
         <input
           type="date"
@@ -118,7 +118,7 @@
       <!-- Priority -->
       <div class="mb-3">
         <label for="priority" class="form-label">
-          Priority <span class="text-danger">*</span>
+          Priority 
         </label>
         <select
           class="form-select"

@@ -40,9 +40,9 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'deadline' => 'required|date',
-            'priority' => 'required|in:low,medium,high,urgent',
-            'project_manager_id' => 'required|exists:users,id', // Ensure the manager exists
+            'deadline' => 'date',
+            'priority' => 'in:low,medium,high,urgent',
+            'project_manager_id' => 'exists:users,id', // Ensure the manager exists
         ]);
 
         $space->projects()->create($validated);

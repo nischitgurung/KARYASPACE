@@ -74,45 +74,55 @@
     @endif
 
     <!-- Spaces List -->
-    @if($spaces->isEmpty())
-      <div class="alert alert-info">
-        You don't have any spaces yet. Start by creating one!
-      </div>
-    @else
-      <div class="row">
-        @foreach($spaces as $space)
-          <div class="col-md-4">
-            <div class="card mb-4 shadow-sm h-100">
-              <div class="card-body d-flex flex-column">
-                <h5 class="card-title">{{ $space->name }}</h5>
-                <p class="card-text flex-grow-1">{{ $space->description ?? 'No description' }}</p>
-                <div class="mt-auto d-flex flex-wrap gap-2">
-                  <a href="{{ route('spaces.show', $space->id) }}" class="btn btn-outline-primary flex-grow-1">
-                    <i class="bi bi-eye"></i> View Projects
-                  </a>
-                  <a href="{{ route('spaces.edit', $space->id) }}" class="btn btn-outline-secondary flex-grow-1">
-                    <i class="bi bi-pencil"></i> Edit
-                  </a>
-                  <form
-                    action="{{ route('spaces.destroy', $space->id) }}"
-                    method="POST"
-                    class="flex-grow-1"
-                    onsubmit="return confirm('Are you sure you want to delete this space?');"
-                  >
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-outline-danger w-100">
-                      <i class="bi bi-trash"></i> Delete
-                    </button>
-                  </form>
-                </div>
-              </div>
+    <!-- Spaces List -->
+@if($spaces->isEmpty())
+  <div class="alert alert-info">
+    You don't have any spaces yet. Start by creating one!
+  </div>
+@else
+  <div class="row">
+    @foreach($spaces as $space)
+      <div class="col-md-4">
+        <div class="card mb-4 shadow-sm h-100">
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title">{{ $space->name }}</h5>
+            <p class="card-text flex-grow-1">{{ $space->description ?? 'No description' }}</p>
+
+            <div class="mt-auto d-flex flex-wrap gap-2">
+              <a href="{{ route('spaces.show', $space->id) }}" class="btn btn-outline-primary flex-grow-1">
+                <i class="bi bi-eye"></i> View Projects
+              </a>
+              <a href="{{ route('spaces.edit', $space->id) }}" class="btn btn-outline-secondary flex-grow-1">
+                <i class="bi bi-pencil"></i> Edit
+              </a>
+              <form
+                action="{{ route('spaces.destroy', $space->id) }}"
+                method="POST"
+                class="flex-grow-1"
+                onsubmit="return confirm('Are you sure you want to delete this space?');"
+              >
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-outline-danger w-100">
+                  <i class="bi bi-trash"></i> Delete
+                </button>
+              </form>
+
+              {{-- Invite Button --}}
+              <form action="{{ route('spaces.invite.generate', $space->id) }}" method="POST" class="flex-grow-1">
+                @csrf
+                <button type="submit" class="btn w-100" style="background-color: rgb(74, 180, 50); color: white;">
+                  <i class="bi bi-person-plus"></i> Invite
+                </button>
+              </form>
             </div>
           </div>
-        @endforeach
+        </div>
       </div>
-    @endif
+    @endforeach
   </div>
+@endif
+
 
   <!-- Footer -->
   <footer
