@@ -53,4 +53,6 @@ Route::middleware([
     Route::post('/spaces/{space}/invite', [InviteController::class, 'generate'])->name('spaces.invite.generate');
 Route::get('/invite/{token}', [InviteController::class, 'accept'])->middleware('auth')->name('invite.accept');
 
+Route::get('/spaces/{space}/invite-link', [InviteController::class, 'showLink'])->name('spaces.invite.link');
+
 });
