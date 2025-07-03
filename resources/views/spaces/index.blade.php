@@ -43,10 +43,11 @@
             <i class="bi bi-link-45deg"></i> Join Space
           </button>
           <div class="dropdown-menu p-3" style="width: 280px;">
-            <form>
+            <form method="POST" action="{{ route('invite.handle') }}">
+              @csrf
               <div class="mb-2">
                 <label for="spaceInviteLink" class="form-label">Paste invite link</label>
-                <input type="text" class="form-control" id="spaceInviteLink" placeholder="https://karyaspace.com/join/..." />
+                <input type="text" name="invite_link" class="form-control" id="spaceInviteLink" placeholder="https://karyaspace.com/join/..." required />
               </div>
               <button type="submit" class="btn btn-primary w-100">Join</button>
             </form>
@@ -58,53 +59,72 @@
       </div>
     </div>
 
+    {{-- Flash Messages --}}
     @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-      {{ session('success') }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    @endif
+
+    @if(session('warning'))
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ session('warning') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
     @endif
 
     @if($spaces->isEmpty())
-    <div class="alert alert-info">You don't have any spaces yet. Start by creating one!</div>
+      <div class="alert alert-info">You don't have any spaces yet. Start by creating one!</div>
     @else
-    <div class="row">
-      @foreach($spaces as $space)
-      <div class="col-md-4">
-        <div class="card mb-4 shadow-sm h-100">
-          <div class="card-body d-flex flex-column">
-            <h5 class="card-title">{{ $space->name }}</h5>
-            <p class="card-text flex-grow-1">{{ $space->description ?? 'No description' }}</p>
-            <div class="mt-auto d-flex flex-wrap gap-2">
-              <a href="{{ route('spaces.show', $space->id) }}" class="btn btn-outline-primary flex-grow-1">
-                <i class="bi bi-eye"></i> View Projects
-              </a>
-              <a href="{{ route('spaces.edit', $space->id) }}" class="btn btn-outline-secondary flex-grow-1">
-                <i class="bi bi-pencil"></i> Edit
-              </a>
-              <form action="{{ route('spaces.destroy', $space->id) }}" method="POST" class="flex-grow-1" onsubmit="return confirm('Are you sure you want to delete this space?');">
-                @csrf @method('DELETE')
-                <button type="submit" class="btn btn-outline-danger w-100">
-                  <i class="bi bi-trash"></i> Delete
+      <div class="row">
+        @foreach($spaces as $space)
+        @php $isOwner = $space->user_id === auth()->id(); @endphp
+        <div class="col-md-4">
+          <div class="card mb-4 shadow-sm h-100">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">{{ $space->name }}</h5>
+              <p class="card-text flex-grow-1">{{ $space->description ?? 'No description' }}</p>
+              <div class="mt-auto d-flex flex-wrap gap-2">
+                <a href="{{ route('spaces.show', $space->id) }}" class="btn btn-outline-primary flex-grow-1">
+                  <i class="bi bi-eye"></i> View Projects
+                </a>
+
+                @if($isOwner)
+                  <a href="{{ route('spaces.edit', $space->id) }}" class="btn btn-outline-secondary flex-grow-1">
+                    <i class="bi bi-pencil"></i> Edit
+                  </a>
+                  <form action="{{ route('spaces.destroy', $space->id) }}" method="POST" class="flex-grow-1" onsubmit="return confirm('Are you sure you want to delete this space?');">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="btn btn-outline-danger w-100">
+                      <i class="bi bi-trash"></i> Delete
+                    </button>
+                  </form>
+                @else
+                  <button class="btn btn-outline-secondary flex-grow-1" disabled>
+                    <i class="bi bi-lock"></i> Can't Edit
+                  </button>
+                  <form action="{{ route('spaces.leave', $space->id) }}" method="POST" class="flex-grow-1" onsubmit="return confirm('Are you sure you want to leave this space?');">
+                    @csrf
+                    <button type="submit" class="btn btn-outline-warning w-100">
+                      <i class="bi bi-box-arrow-left"></i> Leave
+                    </button>
+                  </form>
+                @endif
+
+                <input type="hidden" id="invite-link-{{ $space->id }}">
+                <button type="button"
+                        class="btn w-100"
+                        style="background-color: rgb(74, 180, 50); color: white;"
+                        onclick="generateAndCopyLink('{{ $space->id }}')">
+                  <i class="bi bi-person-plus"></i> Invite
                 </button>
-              </form>
-
-              <!-- Hidden input for dynamic invite link -->
-              <input type="hidden" id="invite-link-{{ $space->id }}">
-
-              <!-- Single Invite button that generates and copies -->
-              <button type="button"
-                      class="btn w-100"
-                      style="background-color: rgb(74, 180, 50); color: white;"
-                      onclick="generateAndCopyLink('{{ $space->id }}')">
-                <i class="bi bi-person-plus"></i> Invite
-              </button>
+              </div>
             </div>
           </div>
         </div>
+        @endforeach
       </div>
-      @endforeach
-    </div>
     @endif
   </div>
 

@@ -25,17 +25,17 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    
+
+    // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Spaces
     Route::resource('spaces', SpaceController::class);
+    Route::post('/spaces/{space}/leave', [SpaceController::class, 'leave'])->name('spaces.leave');
 
-    // Fully nested projects under spaces
-    Route::resource('spaces.projects', ProjectController::class)->except(['index']);
-
-    // Projects listing under a space
+    // Projects under spaces
     Route::get('/spaces/{space}/projects', [ProjectController::class, 'index'])->name('spaces.projects.index');
+    Route::resource('spaces.projects', ProjectController::class)->except(['index']);
 
     // Assign project manager
     Route::patch('/projects/{project}/assign-manager', [ProjectController::class, 'assignManager'])->name('projects.assignManager');
@@ -50,9 +50,9 @@ Route::middleware([
     // Comments on tasks
     Route::post('/tasks/{task}/comments', [CommentController::class, 'store'])->name('comments.store');
 
+    // Invites
     Route::post('/spaces/{space}/invite', [InviteController::class, 'generate'])->name('spaces.invite.generate');
-Route::get('/invite/{token}', [InviteController::class, 'accept'])->middleware('auth')->name('invite.accept');
-
-Route::get('/spaces/{space}/invite-link', [InviteController::class, 'showLink'])->name('spaces.invite.link');
-
+    Route::get('/spaces/{space}/invite-link', [InviteController::class, 'showLink'])->name('spaces.invite.link');
+    Route::get('/invite/{token}', [InviteController::class, 'accept'])->name('invite.accept');
+    Route::post('/join-invite', [InviteController::class, 'handleJoin'])->name('invite.handle');
 });

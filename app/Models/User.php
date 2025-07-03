@@ -79,5 +79,11 @@ public function projects()
     return $this->belongsToMany(Project::class, 'project_user');
 }
 
+public function space()
+{
+    return $this->belongsToMany(Space::class)
+                ->withPivot('role_id')
+                ->withTimestamps();
+}
 
 }

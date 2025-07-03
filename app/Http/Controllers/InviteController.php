@@ -30,19 +30,32 @@ class InviteController extends Controller
                 $query->whereNull('expires_at')
                       ->orWhere('expires_at', '>', now());
             })
-            ->firstOrFail();
+            ->first();
 
-        $invite->space->users()->syncWithoutDetaching([
-            auth()->id() => ['role_id' => $invite->role_id ?? defaultRoleId()],
+        if (!$invite || !$invite->space) {
+            return redirect()->route('spaces.index')
+                ->with('warning', 'This invite is invalid or the space no longer exists.');
+        }
+
+        $user = auth()->user();
+        $space = $invite->space;
+
+        // Prevent duplicate join
+        if ($space->users()->where('user_id', $user->id)->exists()) {
+            return redirect()->route('spaces.index')
+                ->with('warning', 'You are already a member of this space.');
+        }
+
+        $space->users()->syncWithoutDetaching([
+            $user->id => ['role_id' => $invite->role_id ?? defaultRoleId()],
         ]);
 
-        return redirect()->route('spaces.show', $invite->space)
-                         ->with('success', 'You joined the space!');
+        return redirect()->route('spaces.show', $space)
+            ->with('success', 'You joined the space!');
     }
 
     public function showLink(Space $space)
     {
-        // Try to fetch the most recent non-expired invite by this user
         $invite = Invite::where('space_id', $space->id)
             ->where('inviter_id', auth()->id())
             ->where(function ($query) {
@@ -52,7 +65,6 @@ class InviteController extends Controller
             ->latest()
             ->first();
 
-        // If none exists, create a new invite
         if (!$invite) {
             $invite = Invite::create([
                 'space_id' => $space->id,
@@ -65,4 +77,15 @@ class InviteController extends Controller
 
         return route('invite.accept', $invite->token);
     }
+
+    public function handleJoin(Request $request)
+{
+    $request->validate([
+        'invite_link' => 'required|url'
+    ]);
+
+    $token = Str::afterLast($request->input('invite_link'), '/');
+    return redirect()->route('invite.accept', ['token' => $token]);
+}
+
 }
