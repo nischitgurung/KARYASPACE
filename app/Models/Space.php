@@ -13,10 +13,10 @@ class Space extends Model
 
     protected $fillable = ['name', 'description', 'user_id'];
 
-    // A space belongs to a creator/owner
-    public function user()
+    // A space belongs to an owner (creator)
+    public function owner()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     // A space can have many projects
@@ -25,7 +25,7 @@ class Space extends Model
         return $this->hasMany(Project::class);
     }
 
-    // ✅ A space can have many users (members)
+    // A space can have many users (members) with roles
     public function users()
     {
         return $this->belongsToMany(User::class)

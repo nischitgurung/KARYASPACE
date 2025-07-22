@@ -13,14 +13,12 @@ class ProjectController extends Controller
     /**
      * Display a listing of projects within a specific space.
      */
-    public function index(Space $space)
-    {
-        // Fetch all projects belonging to the given space
-        $projects = $space->projects()->with('manager')->get(); // Eager load the manager
+public function show(Project $project)
+{
+    $project->load('tasks.users');
+    return view('projects.index', compact('project'));
+}
 
-        // Return a view to display the projects list
-        return view('projects.index', compact('space', 'projects'));
-    }
 
     /**
      * Show the form for creating a new project within a space.

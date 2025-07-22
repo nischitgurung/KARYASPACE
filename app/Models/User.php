@@ -64,11 +64,13 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-    public function spaces()
+  public function spaces()
 {
-  return $this->hasMany(Space::class);
-
+    return $this->belongsToMany(Space::class)
+        ->withPivot('role_id')
+        ->withTimestamps();
 }
+
 public function managedProjects()
 {
     return $this->hasMany(Project::class, 'project_manager_id');

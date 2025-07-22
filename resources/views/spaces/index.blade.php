@@ -95,7 +95,8 @@
                       <i class="bi bi-pencil"></i> Edit
                     </a>
                     <form action="{{ route('spaces.destroy', $space->id) }}" method="POST" class="flex-grow-1" onsubmit="return confirm('Are you sure you want to delete this space?');">
-                      @csrf @method('DELETE')
+                      @csrf
+                      @method('DELETE')
                       <button type="submit" class="btn btn-outline-danger w-100">
                         <i class="bi bi-trash"></i> Delete
                       </button>
@@ -198,8 +199,9 @@
           'X-CSRF-TOKEN': '{{ csrf_token() }}'
         }
       })
-      .then(response => response.text())
-      .then(link => {
+      .then(response => response.json())
+      .then(data => {
+        const link = data.invite_link;
         document.getElementById('inviteLinkInput').value = link;
 
         const encodedLink = encodeURIComponent(link);
@@ -213,6 +215,7 @@
     function copyInviteLink() {
       const input = document.getElementById('inviteLinkInput');
       input.select();
+      input.setSelectionRange(0, 99999); // For mobile devices
       document.execCommand('copy');
       alert('Invite link copied to clipboard!');
     }

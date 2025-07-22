@@ -8,11 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class SpaceUser extends Model
 {
     use HasFactory;
-    protected $fillable = ['space_id', 'user_id', 'role'];
-    
-
 
     protected $table = 'space_user';
+
+    protected $fillable = ['space_id', 'user_id', 'role_id'];
 
     public function space()
     {
@@ -23,5 +22,9 @@ class SpaceUser extends Model
     {
         return $this->belongsTo(User::class);
     }
-}
 
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+}

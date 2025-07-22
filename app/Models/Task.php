@@ -16,10 +16,11 @@ class Task extends Model
         return $this->belongsTo(Project::class);
     }
 
-    public function users()
-    {
-        return $this->belongsToMany(User::class, 'task_user');
-    }
+ public function users()
+{
+    return $this->belongsToMany(User::class)->withPivot('role_id')->withTimestamps();
+}
+
 
     public function comments()
     {

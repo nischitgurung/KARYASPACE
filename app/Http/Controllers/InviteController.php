@@ -10,30 +10,24 @@ use App\Models\Role;
 
 class InviteController extends Controller
 {
-    // Generate an invite link for a space
-   public function generate(Request $request, Space $space)
-{
-    $roleName = $request->input('role', 'Member');  // default to Member
-    $roleId = Role::where('name', $roleName)->value('id');
+    // Generate invite link for a space with role (default Member)
+    public function generate(Request $request, Space $space)
+    {
+        $roleName = $request->input('role', 'Member');
+        $roleId = Role::where('name', $roleName)->value('id') ?? Role::where('name', 'Member')->value('id');
 
-    // Validate role existence
-    if (!$roleId) {
-        return back()->with('warning', 'Invalid role selected.');
+        $invite = Invite::create([
+            'space_id' => $space->id,
+            'token' => Str::uuid(),
+            'inviter_id' => auth()->id(),
+            'role_id' => $roleId,
+            'expires_at' => now()->addDays(7),
+        ]);
+
+        return back()->with('success', 'Invite link: ' . route('invite.accept', $invite->token));
     }
 
-    $invite = Invite::create([
-        'space_id' => $space->id,
-        'token' => Str::uuid(),
-        'inviter_id' => auth()->id(),
-        'role_id' => $roleId,
-        'expires_at' => now()->addDays(7),
-    ]);
-
-    return back()->with('success', 'Invite link: ' . route('invite.accept', $invite->token));
-}
-
-
-    // Accept an invitation link
+    // Accept invite token and join space with role
     public function accept($token)
     {
         $invite = Invite::where('token', $token)
@@ -51,28 +45,28 @@ class InviteController extends Controller
         $user = auth()->user();
         $space = $invite->space;
 
-        // Prevent duplicate join
         if ($space->users()->where('user_id', $user->id)->exists()) {
             return redirect()->route('spaces.index')
                 ->with('warning', 'You are already a member of this space.');
         }
 
-        // Attach the user to the space with the role
         $space->users()->syncWithoutDetaching([
-            $user->id => [
-                'role_id' => $invite->role_id ?? Role::where('name', 'Member')->value('id')
-            ],
+            $user->id => ['role_id' => $invite->role_id],
         ]);
 
         return redirect()->route('spaces.show', $space)
             ->with('success', 'You joined the space!');
     }
 
-    // Show latest valid invite link for a space or generate one if none exists
-    public function showLink(Space $space)
+    // Return JSON invite link for a space and role (used by AJAX)
+    public function showLink(Request $request, Space $space)
     {
+        $roleName = $request->query('role', 'Member');
+        $roleId = Role::where('name', $roleName)->value('id') ?? Role::where('name', 'Member')->value('id');
+
         $invite = Invite::where('space_id', $space->id)
             ->where('inviter_id', auth()->id())
+            ->where('role_id', $roleId)
             ->where(function ($query) {
                 $query->whereNull('expires_at')
                       ->orWhere('expires_at', '>', now());
@@ -85,19 +79,21 @@ class InviteController extends Controller
                 'space_id' => $space->id,
                 'token' => Str::uuid(),
                 'inviter_id' => auth()->id(),
-                'role_id' => Role::where('name', 'Member')->value('id'),
+                'role_id' => $roleId,
                 'expires_at' => now()->addDays(7),
             ]);
         }
 
-        return route('invite.accept', $invite->token);
+        return response()->json([
+            'invite_link' => route('invite.accept', $invite->token)
+        ]);
     }
 
-    // Handle manual invite link submission
+    // Handle manual invite link submission form
     public function handleJoin(Request $request)
     {
         $request->validate([
-            'invite_link' => 'required|url'
+            'invite_link' => 'required|url',
         ]);
 
         $token = Str::afterLast($request->input('invite_link'), '/');
