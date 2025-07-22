@@ -10,19 +10,30 @@ use App\Models\Role;
 
 class InviteController extends Controller
 {
-    public function generate(Request $request, Space $space)
-    {
-        $invite = Invite::create([
-            'space_id' => $space->id,
-            'token' => Str::uuid(),
-            'inviter_id' => auth()->id(),
-            'role_id' => Role::where('name', 'Member')->value('id'),
-            'expires_at' => now()->addDays(7),
-        ]);
+    // Generate an invite link for a space
+   public function generate(Request $request, Space $space)
+{
+    $roleName = $request->input('role', 'Member');  // default to Member
+    $roleId = Role::where('name', $roleName)->value('id');
 
-        return back()->with('success', 'Invite link: ' . route('invite.accept', $invite->token));
+    // Validate role existence
+    if (!$roleId) {
+        return back()->with('warning', 'Invalid role selected.');
     }
 
+    $invite = Invite::create([
+        'space_id' => $space->id,
+        'token' => Str::uuid(),
+        'inviter_id' => auth()->id(),
+        'role_id' => $roleId,
+        'expires_at' => now()->addDays(7),
+    ]);
+
+    return back()->with('success', 'Invite link: ' . route('invite.accept', $invite->token));
+}
+
+
+    // Accept an invitation link
     public function accept($token)
     {
         $invite = Invite::where('token', $token)
@@ -46,14 +57,18 @@ class InviteController extends Controller
                 ->with('warning', 'You are already a member of this space.');
         }
 
+        // Attach the user to the space with the role
         $space->users()->syncWithoutDetaching([
-            $user->id => ['role_id' => $invite->role_id ?? defaultRoleId()],
+            $user->id => [
+                'role_id' => $invite->role_id ?? Role::where('name', 'Member')->value('id')
+            ],
         ]);
 
         return redirect()->route('spaces.show', $space)
             ->with('success', 'You joined the space!');
     }
 
+    // Show latest valid invite link for a space or generate one if none exists
     public function showLink(Space $space)
     {
         $invite = Invite::where('space_id', $space->id)
@@ -78,14 +93,14 @@ class InviteController extends Controller
         return route('invite.accept', $invite->token);
     }
 
+    // Handle manual invite link submission
     public function handleJoin(Request $request)
-{
-    $request->validate([
-        'invite_link' => 'required|url'
-    ]);
+    {
+        $request->validate([
+            'invite_link' => 'required|url'
+        ]);
 
-    $token = Str::afterLast($request->input('invite_link'), '/');
-    return redirect()->route('invite.accept', ['token' => $token]);
-}
-
+        $token = Str::afterLast($request->input('invite_link'), '/');
+        return redirect()->route('invite.accept', ['token' => $token]);
+    }
 }

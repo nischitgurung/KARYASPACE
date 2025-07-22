@@ -43,7 +43,7 @@ class SpaceController extends Controller
         $space = Space::with('projects')->findOrFail($id);
         $users = User::all();
 
-        return view('spaces.show', compact('space', 'users'));
+        return view('projects.index', compact('space', 'users'));
     }
 
     public function edit($id)

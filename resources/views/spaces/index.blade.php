@@ -79,50 +79,49 @@
     @else
       <div class="row">
         @foreach($spaces as $space)
-        @php $isOwner = $space->user_id === auth()->id(); @endphp
-        <div class="col-md-4">
-          <div class="card mb-4 shadow-sm h-100">
-            <div class="card-body d-flex flex-column">
-              <h5 class="card-title">{{ $space->name }}</h5>
-              <p class="card-text flex-grow-1">{{ $space->description ?? 'No description' }}</p>
-              <div class="mt-auto d-flex flex-wrap gap-2">
-                <a href="{{ route('spaces.show', $space->id) }}" class="btn btn-outline-primary flex-grow-1">
-                  <i class="bi bi-eye"></i> View Projects
-                </a>
-
-                @if($isOwner)
-                  <a href="{{ route('spaces.edit', $space->id) }}" class="btn btn-outline-secondary flex-grow-1">
-                    <i class="bi bi-pencil"></i> Edit
+          @php $isOwner = $space->user_id === auth()->id(); @endphp
+          <div class="col-md-4">
+            <div class="card mb-4 shadow-sm h-100">
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title">{{ $space->name }}</h5>
+                <p class="card-text flex-grow-1">{{ $space->description ?? 'No description' }}</p>
+                <div class="mt-auto d-flex flex-wrap gap-2">
+                  <a href="{{ route('spaces.show', $space->id) }}" class="btn btn-outline-primary flex-grow-1">
+                    <i class="bi bi-eye"></i> View Projects
                   </a>
-                  <form action="{{ route('spaces.destroy', $space->id) }}" method="POST" class="flex-grow-1" onsubmit="return confirm('Are you sure you want to delete this space?');">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="btn btn-outline-danger w-100">
-                      <i class="bi bi-trash"></i> Delete
-                    </button>
-                  </form>
-                @else
-                  <button class="btn btn-outline-secondary flex-grow-1" disabled>
-                    <i class="bi bi-lock"></i> Can't Edit
-                  </button>
-                  <form action="{{ route('spaces.leave', $space->id) }}" method="POST" class="flex-grow-1" onsubmit="return confirm('Are you sure you want to leave this space?');">
-                    @csrf
-                    <button type="submit" class="btn btn-outline-warning w-100">
-                      <i class="bi bi-box-arrow-left"></i> Leave
-                    </button>
-                  </form>
-                @endif
 
-                <input type="hidden" id="invite-link-{{ $space->id }}">
-                <button type="button"
-                        class="btn w-100"
-                        style="background-color: rgb(74, 180, 50); color: white;"
-                        onclick="generateAndCopyLink('{{ $space->id }}')">
-                  <i class="bi bi-person-plus"></i> Invite
-                </button>
+                  @if($isOwner)
+                    <a href="{{ route('spaces.edit', $space->id) }}" class="btn btn-outline-secondary flex-grow-1">
+                      <i class="bi bi-pencil"></i> Edit
+                    </a>
+                    <form action="{{ route('spaces.destroy', $space->id) }}" method="POST" class="flex-grow-1" onsubmit="return confirm('Are you sure you want to delete this space?');">
+                      @csrf @method('DELETE')
+                      <button type="submit" class="btn btn-outline-danger w-100">
+                        <i class="bi bi-trash"></i> Delete
+                      </button>
+                    </form>
+                  @else
+                    <button class="btn btn-outline-secondary flex-grow-1" disabled>
+                      <i class="bi bi-lock"></i> Can't Edit
+                    </button>
+                    <form action="{{ route('spaces.leave', $space->id) }}" method="POST" class="flex-grow-1" onsubmit="return confirm('Are you sure you want to leave this space?');">
+                      @csrf
+                      <button type="submit" class="btn btn-outline-warning w-100">
+                        <i class="bi bi-box-arrow-left"></i> Leave
+                      </button>
+                    </form>
+                  @endif
+
+                  <button type="button"
+                    class="btn w-100"
+                    style="background-color: rgb(74, 180, 50); color: white;"
+                    onclick="openInviteModal('{{ $space->id }}')">
+                    <i class="bi bi-person-plus"></i> Invite
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
         @endforeach
       </div>
     @endif
@@ -132,12 +131,67 @@
     <p class="mb-0">© 2025 KaryaSpace. All rights reserved.</p>
   </footer>
 
+  <!-- Invite Modal -->
+  <div class="modal fade" id="inviteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content shadow-lg">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-person-plus me-2"></i> Share Invite Link</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="roleSelect" class="form-label">Select Role to Invite</label>
+            <select id="roleSelect" class="form-select">
+              <option value="Member" selected>Member</option>
+              <option value="Project Manager">Project Manager</option>
+              <option value="Admin">Admin</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Invite Link</label>
+            <input type="text" class="form-control" id="inviteLinkInput" readonly>
+          </div>
+          <button class="btn btn-outline-secondary w-100 mb-3" onclick="copyInviteLink()">
+            <i class="bi bi-clipboard"></i> Copy Link
+          </button>
+          <div class="d-flex justify-content-around">
+            <a id="whatsappShare" target="_blank" class="btn btn-success" title="Share on WhatsApp">
+              <i class="bi bi-whatsapp"></i>
+            </a>
+            <a id="facebookShare" target="_blank" class="btn btn-primary" title="Share on Facebook">
+              <i class="bi bi-facebook"></i>
+            </a>
+            <a id="emailShare" target="_blank" class="btn btn-danger" title="Share via Email">
+              <i class="bi bi-envelope-fill"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    function generateAndCopyLink(spaceId) {
-      const url = `/spaces/${spaceId}/invite-link`;
+    let currentSpaceId = null;
 
-      fetch(url, {
+    function openInviteModal(spaceId) {
+      currentSpaceId = spaceId;
+      generateInviteLink(spaceId, document.getElementById('roleSelect').value);
+      const modal = new bootstrap.Modal(document.getElementById('inviteModal'));
+      modal.show();
+    }
+
+    document.getElementById('roleSelect').addEventListener('change', function() {
+      if (currentSpaceId) {
+        generateInviteLink(currentSpaceId, this.value);
+      }
+    });
+
+    function generateInviteLink(spaceId, role) {
+      const encodedRole = encodeURIComponent(role);
+      fetch(`/spaces/${spaceId}/invite-link?role=${encodedRole}`, {
         method: 'GET',
         headers: {
           'X-Requested-With': 'XMLHttpRequest',
@@ -146,11 +200,21 @@
       })
       .then(response => response.text())
       .then(link => {
-        const input = document.getElementById(`invite-link-${spaceId}`);
-        input.value = link;
-        return navigator.clipboard.writeText(link);
+        document.getElementById('inviteLinkInput').value = link;
+
+        const encodedLink = encodeURIComponent(link);
+        document.getElementById('whatsappShare').href = `https://wa.me/?text=${encodedLink}`;
+        document.getElementById('facebookShare').href = `https://www.facebook.com/sharer/sharer.php?u=${encodedLink}`;
+        document.getElementById('emailShare').href = `mailto:?subject=Join%20My%20KaryaSpace&body=${encodedLink}`;
       })
-      .catch(err => console.error('Failed to generate or copy link:', err));
+      .catch(err => console.error('Failed to generate invite link:', err));
+    }
+
+    function copyInviteLink() {
+      const input = document.getElementById('inviteLinkInput');
+      input.select();
+      document.execCommand('copy');
+      alert('Invite link copied to clipboard!');
     }
   </script>
 </body>

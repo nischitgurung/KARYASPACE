@@ -29,28 +29,33 @@ Route::middleware([
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Spaces
+    // Spaces resource routes
     Route::resource('spaces', SpaceController::class);
+
+    // Leave a space
     Route::post('/spaces/{space}/leave', [SpaceController::class, 'leave'])->name('spaces.leave');
 
-    // Projects under spaces
-    Route::get('/spaces/{space}/projects', [ProjectController::class, 'index'])->name('spaces.projects.index');
-    Route::resource('spaces.projects', ProjectController::class)->except(['index']);
+    // Projects nested under spaces (full resource)
+    Route::resource('spaces.projects', ProjectController::class);
 
-    // Assign project manager
+    // Add employee to project
+    Route::post('/spaces/{space}/projects/{project}/add-employee', [ProjectController::class, 'addEmployee'])
+        ->name('spaces.projects.addEmployee');
+
+    // Remove employee from project
+    Route::delete('/spaces/{space}/projects/{project}/remove-employee/{user}', [ProjectController::class, 'removeEmployee'])
+        ->name('spaces.projects.removeEmployee');
+
+    // Assign project manager (optional)
     Route::patch('/projects/{project}/assign-manager', [ProjectController::class, 'assignManager'])->name('projects.assignManager');
 
-    // Assign/remove employees
-    Route::post('/projects/{project}/employees', [ProjectController::class, 'addEmployee'])->name('projects.employees.add');
-    Route::delete('/projects/{project}/employees/{user}', [ProjectController::class, 'removeEmployee'])->name('projects.employees.remove');
-
-    // Tasks nested under projects
+    // Tasks nested under projects (except show)
     Route::resource('projects.tasks', TaskController::class)->except('show');
 
     // Comments on tasks
     Route::post('/tasks/{task}/comments', [CommentController::class, 'store'])->name('comments.store');
 
-    // Invites
+    // Invites routes
     Route::post('/spaces/{space}/invite', [InviteController::class, 'generate'])->name('spaces.invite.generate');
     Route::get('/spaces/{space}/invite-link', [InviteController::class, 'showLink'])->name('spaces.invite.link');
     Route::get('/invite/{token}', [InviteController::class, 'accept'])->name('invite.accept');

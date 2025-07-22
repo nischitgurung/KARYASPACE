@@ -14,28 +14,54 @@
 </head>
 <body>
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary" aria-label="Primary navigation">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url('/') }}">
-                <i class="bi bi-kanban-fill" aria-hidden="true"></i> KaryaSpace
+   <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary" aria-label="Main navigation">
+    <div class="container">
+      <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{{ url('/') }}">
+        <i class="bi bi-kanban-fill fs-3" aria-hidden="true"></i>
+        <span>KaryaSpace</span>
+      </a>
+
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navMenu"
+        aria-controls="navMenu"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
+          <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-1" href="{{ url('about') }}">
+              <i class="bi bi-info-circle-fill" aria-hidden="true"></i> About
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navMenu">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{ url('about') }}">
-                            <i class="bi bi-info-circle-fill" aria-hidden="true"></i> About
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url('contact') }}">
-                            <i class="bi bi-envelope-fill" aria-hidden="true"></i> Contact
-                        </a>
-                    </li>
-                 <li class="nav-item">
+          </li>
+          <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-1" href="{{ url('contact') }}">
+              <i class="bi bi-envelope-fill" aria-hidden="true"></i> Contact
+            </a>
+          </li>
+
+          @if (Route::has('login'))
+            @auth
+              <li class="nav-item">
+                <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
+              </li>
+              <li class="nav-item">
+                <form method="POST" action="{{ route('logout') }}">
+                  @csrf
+                  <button type="submit" class="btn btn-link nav-link text-danger p-0" style="text-decoration:none;">
+                    Logout
+                  </button>
+                </form>
+              </li>
+            @else
+              <li class="nav-item">
                 <a class="nav-link d-flex align-items-center gap-1" href="{{ route('login') }}">
                   <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> Login
                 </a>
@@ -47,10 +73,12 @@
                   </a>
                 </li>
               @endif
-                </ul>
-            </div>
-        </div>
-    </nav>
+            @endauth
+          @endif
+        </ul>
+      </div>
+    </div>
+  </nav>
 
     <main>
         <!-- Hero Section -->
