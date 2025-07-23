@@ -95,17 +95,41 @@ class TaskController extends Controller
         return redirect()->back()->with('success', 'Task status updated.');
     }
 
-    private function authorizeRole(Space $space, array $allowedRoles)
-    {
-        $user = auth()->user();
-        $pivot = $space->users()->where('user_id', $user->id)->first()?->pivot;
+   private function authorizeRole(Space $space, array $allowedRoles)
+{
+    $user = auth()->user();
 
-        if (!$pivot) abort(403, 'You are not a member of this space.');
-
-        $allowedRoleIds = Role::whereIn('name', $allowedRoles)->pluck('id')->toArray();
-
-        if (!in_array($pivot->role_id, $allowedRoleIds)) {
-            abort(403, 'You do not have permission.');
-        }
+    // Always allow space creator
+    if ($space->created_by === $user->id) {
+        return;
     }
+
+    // Always allow project manager for scoped routes
+    $project = request()->route('project');
+    if ($project && $project->project_manager_id === $user->id) {
+        return;
+    }
+
+    // Check pivot role
+    $pivot = $space->users()->where('user_id', $user->id)->first()?->pivot;
+    if (!$pivot) abort(403, 'You are not a member of this space.');
+
+    $allowedRoleIds = Role::whereIn('name', $allowedRoles)->pluck('id')->toArray();
+    if (!in_array($pivot->role_id, $allowedRoleIds)) {
+        abort(403, 'You do not have permission.');
+    }
+
+    
+}
+public function index(Space $space, Project $project)
+{
+    $this->authorizeRole($space, ['Admin', 'Project Manager', 'Member']);
+
+    // Load tasks associated with the project
+    $tasks = $project->tasks()->latest('deadline')->get();
+
+    return view('tasks.index', compact('space', 'project', 'tasks'));
+}
+
+
 }

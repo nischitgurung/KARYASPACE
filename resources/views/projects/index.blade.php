@@ -8,6 +8,11 @@
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    .btn-right-rounded {
+      border-radius: 0.375rem 1rem 1rem 0.375rem !important;
+    }
+  </style>
 </head>
 <body>
 
@@ -83,15 +88,20 @@
               </div>
             </div>
 
-            <div class="btn-group" role="group" aria-label="Project actions">
-              <a href="{{ route('spaces.projects.edit', [$space->id, $project->id]) }}" class="btn btn-sm btn-outline-primary">
+            <div class="d-flex flex-wrap gap-2">
+              <a href="{{ route('spaces.projects.tasks.index', [$space->id, $project->id]) }}" class="btn btn-sm btn-success d-flex align-items-center gap-1">
+                <i class="bi bi-list-task"></i> View Tasks
+              </a>
+
+              <a href="{{ route('spaces.projects.edit', [$space->id, $project->id]) }}" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1">
                 <i class="bi bi-pencil"></i> Edit
               </a>
+
               <form action="{{ route('spaces.projects.destroy', [$space->id, $project->id]) }}" method="POST"
                 onsubmit="return confirm('Are you sure you want to delete this project?');">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn btn-sm btn-outline-danger">
+                <button type="submit" class="btn btn-sm btn-outline-danger  d-flex align-items-center gap-1">
                   <i class="bi bi-trash"></i> Delete
                 </button>
               </form>

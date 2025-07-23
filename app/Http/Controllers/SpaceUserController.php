@@ -79,8 +79,12 @@ class SpaceUserController extends Controller
         // Get Admin role id once (cache if necessary)
         $adminRoleId = Role::where('name', 'Admin')->value('id');
 
-        if (!$pivot || $pivot->role_id !== $adminRoleId) {
-            abort(403, 'Only Admins can manage members.');
-        }
+        if (
+    $space->created_by !== $userId &&
+    (!$pivot || $pivot->role_id !== $adminRoleId)
+) {
+    abort(403, 'Only Admins or the Space Creator can manage members.');
+}
+
     }
 }

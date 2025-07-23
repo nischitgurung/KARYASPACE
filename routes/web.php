@@ -27,6 +27,9 @@ Route::middleware([
     // Spaces resource
     Route::resource('spaces', SpaceController::class);
     Route::post('/spaces/{space}/leave', [SpaceController::class, 'leave'])->name('spaces.leave');
+    Route::get('/spaces/{space}/projects/{project}/tasks', [TaskController::class, 'index'])
+    ->name('spaces.projects.tasks.index');
+
 
     // Projects nested in spaces
     Route::resource('spaces.projects', ProjectController::class);
@@ -76,4 +79,5 @@ Route::middleware([
         Route::patch('/projects/{project}/tasks/{task}/status', [TaskController::class, 'updateStatus'])
             ->name('tasks.updateStatus');
     });
+    
 });
