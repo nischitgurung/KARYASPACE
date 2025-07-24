@@ -21,59 +21,64 @@ Route::middleware([
     'verified',
 ])->group(function () {
 
-    // Dashboard
+    // --- Dashboard ---
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Spaces resource
+    // --- Top-Level Space Routes ---
     Route::resource('spaces', SpaceController::class);
     Route::post('/spaces/{space}/leave', [SpaceController::class, 'leave'])->name('spaces.leave');
 
-    // Projects nested in spaces
-    Route::resource('spaces.projects', ProjectController::class);
+    // --- Group for ALL routes happening inside a specific Space ---
+    Route::prefix('spaces/{space}')->name('spaces.')->group(function () {
 
-    // Project employee management
-    Route::post('/spaces/{space}/projects/{project}/add-employee', [ProjectController::class, 'addEmployee'])
-        ->name('spaces.projects.addEmployee');
-    Route::delete('/spaces/{space}/projects/{project}/remove-employee/{user}', [ProjectController::class, 'removeEmployee'])
-        ->name('spaces.projects.removeEmployee');
+        // --- Invite routes (Scoped to the space) ---
+        Route::post('/invite', [InviteController::class, 'generate'])->name('invite.generate');
+        Route::get('/invite-link', [InviteController::class, 'showLink'])->name('invite.link');
 
-    // Assign project manager
-    Route::patch('/projects/{project}/assign-manager', [ProjectController::class, 'assignManager'])
-        ->name('projects.assignManager');
+        // --- Space Members (Admin only) ---
+        Route::middleware('space.role:Admin')->prefix('members')->name('members.')->group(function () {
+            Route::get('/', [SpaceUserController::class, 'index'])->name('index');
+            Route::get('/{user}/edit', [SpaceUserController::class, 'edit'])->name('edit');
+            Route::put('/{user}', [SpaceUserController::class, 'update'])->name('update');
+            Route::delete('/{user}', [SpaceUserController::class, 'destroy'])->name('destroy');
+        });
 
-    // Comments on tasks
+        // --- Group for routes related to Projects within the space ---
+        Route::prefix('projects')->name('projects.')->group(function() {
+            // Define the resource controller routes for projects
+            Route::resource('/', ProjectController::class)->parameters(['' => 'project']);
+
+            // --- Group for routes related to a specific Project ---
+            Route::prefix('{project}')->group(function() {
+
+                // --- Admin & Project Manager Actions ---
+                Route::middleware('space.role:Admin,Project Manager')->group(function () {
+                    // Project employee management
+                    Route::post('/add-employee', [ProjectController::class, 'addEmployee'])->name('addEmployee');
+                    Route::delete('/remove-employee/{user}', [ProjectController::class, 'removeEmployee'])->name('removeEmployee');
+
+                    // Assign project manager
+                    Route::patch('/assign-manager', [ProjectController::class, 'assignManager'])->name('assignManager');
+
+                    // Task CRUD Routes (Create, Store, Edit, Update, Destroy)
+                    Route::resource('tasks', TaskController::class)->except(['index', 'show']);
+                });
+
+                // --- Member-only Actions ---
+                Route::middleware('space.role:Member')->group(function () {
+                    // Task Progress Update
+                    Route::patch('/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.updateStatus');
+                });
+            });
+        });
+    });
+
+    // --- Routes that DO NOT depend on a space ---
+
+    // Comments on tasks (only needs the task ID)
     Route::post('/tasks/{task}/comments', [CommentController::class, 'store'])->name('comments.store');
 
-    // Invite routes
-    Route::post('/spaces/{space}/invite', [InviteController::class, 'generate'])->name('spaces.invite.generate');
-    Route::get('/spaces/{space}/invite-link', [InviteController::class, 'showLink'])->name('spaces.invite.link');
+    // Invite acceptance routes (token contains all necessary info)
     Route::get('/invite/{token}', [InviteController::class, 'accept'])->name('invite.accept');
     Route::post('/join-invite', [InviteController::class, 'handleJoin'])->name('invite.handle');
-
-    /**
-     * Space Members (Admin only)
-     */
-    Route::middleware('space.role:Admin')->group(function () {
-        Route::get('/spaces/{space}/members', [SpaceUserController::class, 'index'])->name('spaces.members.index');
-        Route::get('/spaces/{space}/members/{user}/edit', [SpaceUserController::class, 'edit'])->name('spaces.members.edit');
-        Route::put('/spaces/{space}/members/{user}', [SpaceUserController::class, 'update'])->name('spaces.members.update');
-        Route::delete('/spaces/{space}/members/{user}', [SpaceUserController::class, 'destroy'])->name('spaces.members.destroy');
-    });
-
-    /**
-     * Task CRUD (Admin & Project Manager)
-     */
-    Route::middleware('space.role:Admin,Project Manager')->group(function () {
-        Route::resource('projects.tasks', TaskController::class)->only([
-            'create', 'store', 'edit', 'update', 'destroy'
-        ]);
-    });
-
-    /**
-     * Task Progress Update (Member only)
-     */
-    Route::middleware('space.role:Member')->group(function () {
-        Route::patch('/projects/{project}/tasks/{task}/status', [TaskController::class, 'updateStatus'])
-            ->name('tasks.updateStatus');
-    });
 });

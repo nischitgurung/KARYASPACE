@@ -85,14 +85,15 @@ public function show(Project $project)
     /**
      * Remove the specified project from storage.
      */
-    public function destroy(Space $space, Project $project)
-    {
-        $this->authorize('delete', $project);
-        
-        $project->delete();
+public function destroy(Space $space, Project $project)
+{
+    $this->authorize('delete', $project);
 
-        return redirect()->route('spaces.show', $space)->with('success', 'Project deleted successfully!');
-    }
+    $project->delete();
+
+    return redirect()->route('spaces.show', $space)->with('success', 'Project deleted successfully.');
+}
+
 
     /**
      * Add an employee to the project's team.
