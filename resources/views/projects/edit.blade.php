@@ -84,7 +84,7 @@
   @endif
 
   <!-- Edit Project Form -->
-  <form action="{{ route('spaces.projects.update', [$space->id, $project->id]) }}" method="POST" novalidate>
+  <form action="{{ route('spaces.projects.update', [$space->id, $project->id]) }}" method="POST" novalidate id="editProjectForm">
     @csrf
     @method('PUT')
 
@@ -121,15 +121,14 @@
     <!-- Deadline -->
     <div class="mb-3">
       <label for="deadline" class="form-label">Deadline</label>
-              <input
-          type="date"
-          name="deadline"
-          id="deadline"
-          class="form-control @error('deadline') is-invalid @enderror"
-          value="{{ old('deadline', $project->deadline ? \Carbon\Carbon::parse($project->deadline)->format('Y-m-d') : '') }}"
-          min="{{ date('Y-m-d') }}"
-        >
-
+      <input
+        type="date"
+        name="deadline"
+        id="deadline"
+        class="form-control @error('deadline') is-invalid @enderror"
+        value="{{ old('deadline', $project->deadline ? \Carbon\Carbon::parse($project->deadline)->format('Y-m-d') : '') }}"
+        min="{{ date('Y-m-d') }}"
+      >
       <div class="invalid-feedback">
         Please select a valid deadline.
       </div>
@@ -173,19 +172,75 @@
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Client-side form validation -->
+<!-- Client-side form validation and auto priority -->
 <script>
 (() => {
   'use strict';
-  const forms = document.querySelectorAll('form');
-  Array.from(forms).forEach(form => {
-    form.addEventListener('submit', event => {
-      if (!form.checkValidity()) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
+
+  const form = document.getElementById('editProjectForm');
+  const deadlineInput = document.getElementById('deadline');
+  const prioritySelect = document.getElementById('priority');
+
+  // Auto-set priority based on deadline difference
+  function autoSetPriority() {
+    if (!deadlineInput.value) return;
+
+    const selectedDate = new Date(deadlineInput.value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const diffTime = selectedDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    // Only auto-set priority if user hasn't manually changed it
+    if (prioritySelect.dataset.userChanged === 'true') return;
+
+    if (diffDays < 7) {
+      prioritySelect.value = 'high';
+    } else if (diffDays < 15) {
+      prioritySelect.value = 'medium';
+    } else {
+      prioritySelect.value = 'low';
+    }
+  }
+
+  // Mark user manual change on priority select
+  prioritySelect.addEventListener('change', () => {
+    prioritySelect.dataset.userChanged = 'true';
+  });
+
+  // Auto set priority when deadline changes
+  deadlineInput.addEventListener('change', autoSetPriority);
+
+  // Form submission validation
+  form.addEventListener('submit', event => {
+    if (!form.checkValidity()) {
+      event.preventDefault();
+      event.stopPropagation();
       form.classList.add('was-validated');
-    }, false);
+      return;
+    }
+
+    const selectedDate = new Date(deadlineInput.value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (selectedDate < today) {
+      event.preventDefault();
+      event.stopPropagation();
+      alert('Deadline cannot be before today.');
+      deadlineInput.focus();
+      return;
+    }
+
+    form.classList.add('was-validated');
+  });
+
+  // On load, auto set priority if deadline preset and user didn't manually change
+  window.addEventListener('DOMContentLoaded', () => {
+    if (deadlineInput.value && !prioritySelect.dataset.userChanged) {
+      autoSetPriority();
+    }
   });
 })();
 </script>

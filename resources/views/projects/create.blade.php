@@ -166,13 +166,51 @@
   <!-- Bootstrap JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- Client-side form validation -->
+  <!-- Client-side form validation and auto priority -->
   <script>
     (() => {
       'use strict';
       const form = document.getElementById('createProjectForm');
+      const deadlineInput = document.getElementById('deadline');
+      const prioritySelect = document.getElementById('priority');
+
+      // Auto-set priority based on deadline
+      function autoSetPriority() {
+        const selectedDate = new Date(deadlineInput.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Normalize to midnight
+
+        if (!deadlineInput.value) {
+          // If no date chosen, do nothing
+          return;
+        }
+
+        // Calculate difference in days
+        const diffTime = selectedDate.getTime() - today.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        // Only auto-set priority if user hasn't manually chosen a value (empty or default)
+        if (prioritySelect.dataset.userChanged === 'true') return;
+
+        if (diffDays < 7) {
+          prioritySelect.value = 'high';
+        } else if (diffDays < 15) {
+          prioritySelect.value = 'medium';
+        } else {
+          prioritySelect.value = 'low';
+        }
+      }
+
+      // Detect if user manually changes priority
+      prioritySelect.addEventListener('change', () => {
+        prioritySelect.dataset.userChanged = 'true';
+      });
+
+      // Run auto priority when deadline changes
+      deadlineInput.addEventListener('change', autoSetPriority);
+
+      // Form submission validation
       form.addEventListener('submit', event => {
-        // HTML5 validation check
         if (!form.checkValidity()) {
           event.preventDefault();
           event.stopPropagation();
@@ -180,11 +218,9 @@
           return;
         }
 
-        // Additional check for deadline >= today
-        const deadlineInput = document.getElementById('deadline');
         const selectedDate = new Date(deadlineInput.value);
         const today = new Date();
-        today.setHours(0,0,0,0); // normalize time to 00:00:00
+        today.setHours(0,0,0,0);
 
         if (selectedDate < today) {
           event.preventDefault();
@@ -195,6 +231,13 @@
         }
 
         form.classList.add('was-validated');
+      });
+
+      // On page load, run autoSetPriority if deadline is preset
+      window.addEventListener('DOMContentLoaded', () => {
+        if (deadlineInput.value && !prioritySelect.value) {
+          autoSetPriority();
+        }
       });
     })();
   </script>

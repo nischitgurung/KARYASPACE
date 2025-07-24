@@ -67,12 +67,17 @@
                     </span>
                   @endif
 
+                  @php
+                    $priorityColors = [
+                      'low' => 'success',
+                      'medium' => 'warning',
+                      'high' => 'danger',
+                      'urgent' => 'danger'
+                    ];
+                    $priority = strtolower($project->priority);
+                    $badgeColor = $priorityColors[$priority] ?? 'secondary';
+                  @endphp
                   @if($project->priority)
-                    @php
-                      $priorityColors = ['high' => 'danger', 'medium' => 'warning', 'low' => 'success'];
-                      $priority = strtolower($project->priority);
-                      $badgeColor = $priorityColors[$priority] ?? 'secondary';
-                    @endphp
                     <span class="badge bg-{{ $badgeColor }}">
                       <i class="bi bi-exclamation-circle me-1"></i> {{ ucfirst($project->priority) }} Priority
                     </span>
@@ -83,6 +88,7 @@
                   <a href="{{ route('spaces.projects.edit', [$space->id, $project->id]) }}" class="btn btn-outline-secondary flex-grow-1">
                     <i class="bi bi-pencil"></i> Edit
                   </a>
+
                   <form action="{{ route('spaces.projects.destroy', [$space->id, $project->id]) }}" method="POST" class="flex-grow-1" onsubmit="return confirm('Are you sure you want to delete this project?');">
                     @csrf
                     @method('DELETE')
@@ -90,10 +96,11 @@
                       <i class="bi bi-trash"></i> Delete
                     </button>
                   </form>
+
                   <button type="button"
-                    class="btn"
-                    style="background-color: rgb(74, 180, 50); color: white; flex-grow: 1;"
-                    onclick="openInviteModal('{{ $space->id }}', '{{ $project->id }}')">
+                    class="btn btn-success flex-grow-1"
+                    onclick="openInviteModal('{{ $space->id }}', '{{ $project->id }}')"
+                  >
                     <i class="bi bi-person-plus"></i> Invite
                   </button>
                 </div>
