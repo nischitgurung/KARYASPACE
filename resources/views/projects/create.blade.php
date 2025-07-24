@@ -105,14 +105,16 @@
         <label for="deadline" class="form-label">
           Deadline 
         </label>
-        <input
-          type="date"
-          class="form-control"
-          id="deadline"
-          name="deadline"
-          value="{{ old('deadline') }}"
-          required
-        >
+                <input
+            type="date"
+            class="form-control"
+            id="deadline"
+            name="deadline"
+            value="{{ old('deadline') }}"
+            required
+            {{-- min="{{ date('Y-m-d') }}"  <!-- This line restricts dates before today --> --}}
+          >
+
       </div>
 
       <!-- Priority -->

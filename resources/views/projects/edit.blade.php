@@ -126,7 +126,7 @@
         name="deadline"
         id="deadline"
         class="form-control @error('deadline') is-invalid @enderror"
-        value="{{ old('deadline', optional($project->deadline)->format('Y-m-d')) }}"
+        value="{{ old('deadline', $project->deadline ? \Carbon\Carbon::parse($project->deadline)->format('Y-m-d') : '') }}"
       >
       <div class="invalid-feedback">
         Please select a valid deadline.
