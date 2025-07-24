@@ -10,6 +10,14 @@ use Illuminate\Support\Facades\Auth;
 
 class ProjectController extends Controller
 {
+    public function index(Space $space)
+{
+    // Load projects belonging to the given space, optionally eager load related models
+    $projects = $space->projects()->with('projectManager')->get();
+
+    return view('projects.index', compact('space', 'projects'));
+}
+
     /**
      * Display a listing of projects within a specific space.
      */
