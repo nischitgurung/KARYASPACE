@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Space;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class SpaceController extends Controller
 {
@@ -33,7 +34,7 @@ class SpaceController extends Controller
     }
 
     /**
-     * Store a new space with authenticated user as creator.
+     * Store a new space with authenticated user as creator and admin member.
      */
     public function store(Request $request)
     {
@@ -42,13 +43,21 @@ class SpaceController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $space = new Space();
-        $space->name = $request->name;
-        $space->description = $request->description;
-        $space->user_id = Auth::id(); // Assign creator
-        $space->save();
+        DB::transaction(function () use ($request) {
+            $userId = Auth::id();
 
-        return redirect()->route('spaces.index')->with('success', 'Space created successfully.');
+            // Create the space
+            $space = new Space();
+            $space->name = $request->name;
+            $space->description = $request->description;
+            $space->user_id = $userId; // Creator
+            $space->save();
+
+            // Add creator as member with admin role
+            $space->users()->attach($userId, ['role_id' => 1]); // Adjust role_id if needed
+        });
+
+        return redirect()->route('spaces.index')->with('success', 'Space created and you’ve been added as admin.');
     }
 
     /**
@@ -59,12 +68,10 @@ class SpaceController extends Controller
         $space = Space::with('projects')->findOrFail($id);
         $userId = Auth::id();
 
-        // Authorization: only creator or member can view
         if ($space->user_id !== $userId && !$space->users()->where('user_id', $userId)->exists()) {
             abort(403, 'You are not authorized to view this space.');
         }
 
-        // Load only members of this space
         $users = $space->users()->withPivot('role_id')->get();
 
         return view('projects.index', compact('space', 'users'));
@@ -128,7 +135,6 @@ class SpaceController extends Controller
     {
         $userId = Auth::id();
 
-        // Detach user from space (pivot table)
         $space->users()->detach($userId);
 
         return redirect()->route('spaces.index')->with('success', 'You left the space.');

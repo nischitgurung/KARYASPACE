@@ -24,6 +24,9 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+        'checkSpaceRole' => \App\Http\Middleware\CheckSpaceRole::class,
+        'RedirectIfAuthenticated' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+
 
         // *** THIS IS THE LINE THAT FIXES THE ERROR ***
         // It tells Laravel that 'space.role' means \App\Http\Middleware\SpaceRoleMiddleware::class

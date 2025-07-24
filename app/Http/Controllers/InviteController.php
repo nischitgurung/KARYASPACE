@@ -10,11 +10,10 @@ use App\Models\Role;
 
 class InviteController extends Controller
 {
-    // Generate invite link for a space with role (default Member)
-    public function generate(Request $request, Space $space)
+    // 🔗 Generate invite link for a space (hardcoded to Member role)
+    public function generate(Space $space)
     {
-        $roleName = $request->input('role', 'Member');
-        $roleId = Role::where('name', $roleName)->value('id') ?? Role::where('name', 'Member')->value('id');
+        $roleId = Role::where('name', 'Member')->value('id');
 
         $invite = Invite::create([
             'space_id' => $space->id,
@@ -27,7 +26,7 @@ class InviteController extends Controller
         return back()->with('success', 'Invite link: ' . route('invite.accept', $invite->token));
     }
 
-    // Accept invite token and join space with role
+    // 📥 Accept invite token and attach user to space
     public function accept($token)
     {
         $invite = Invite::where('token', $token)
@@ -55,14 +54,13 @@ class InviteController extends Controller
         ]);
 
         return redirect()->route('spaces.show', $space)
-            ->with('success', 'You joined the space!');
+            ->with('success', 'You joined the space as a Member!');
     }
 
-    // Return JSON invite link for a space and role (used by AJAX)
-    public function showLink(Request $request, Space $space)
+    // ⚡ Return JSON invite link (used by AJAX, no role selection)
+    public function showLink(Space $space)
     {
-        $roleName = $request->query('role', 'Member');
-        $roleId = Role::where('name', $roleName)->value('id') ?? Role::where('name', 'Member')->value('id');
+        $roleId = Role::where('name', 'Member')->value('id');
 
         $invite = Invite::where('space_id', $space->id)
             ->where('inviter_id', auth()->id())
@@ -89,7 +87,7 @@ class InviteController extends Controller
         ]);
     }
 
-    // Handle manual invite link submission form
+    // 🔗 Manual link join fallback
     public function handleJoin(Request $request)
     {
         $request->validate([
@@ -97,6 +95,7 @@ class InviteController extends Controller
         ]);
 
         $token = Str::afterLast($request->input('invite_link'), '/');
+
         return redirect()->route('invite.accept', ['token' => $token]);
     }
 }

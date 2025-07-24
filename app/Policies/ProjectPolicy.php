@@ -28,6 +28,12 @@ public function delete(User $user, Project $project): bool
 {
     return true; // temporarily allow all to test
 }
+public function create(User $user, Space $space, Project $project)
+{
+    return $space->users()->where('user_id', $user->id)
+                ->whereIn('role', ['admin', 'project_manager'])
+                ->exists();
+}
 
 
     // ... other policy methods (view, create, delete, etc.)

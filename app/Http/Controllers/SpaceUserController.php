@@ -12,23 +12,20 @@ class SpaceUserController extends Controller
 {
     // Show all members of the space with their roles - Admin only
     public function index(Space $space)
-    {
-        $this->authorizeAdmin($space);
+{
+    // No longer restrict to admins or space creators
 
-        // Get users of the space with pivot role_id
-        $members = $space->users()->withPivot('role_id')->get();
+    $members = $space->users()->withPivot('role_id')->get();
 
-        // Map each member to add role name from Role model for display convenience
-        $roleIds = $members->pluck('pivot.role_id')->unique()->toArray();
-        $roles = Role::whereIn('id', $roleIds)->pluck('name', 'id');
+    $roleIds = $members->pluck('pivot.role_id')->unique()->toArray();
+    $roles = Role::whereIn('id', $roleIds)->pluck('name', 'id');
 
-        // Attach role name to each member model dynamically (not saved in DB)
-        $members->each(function ($member) use ($roles) {
-            $member->role_name = $roles->get($member->pivot->role_id) ?? 'Unknown';
-        });
+    $members->each(function ($member) use ($roles) {
+        $member->role_name = $roles->get($member->pivot->role_id) ?? 'Unknown';
+    });
 
-        return view('spaces.members.index', compact('space', 'members'));
-    }
+    return view('spaces.members.index', compact('space', 'members'));
+}
 
     // Show form to edit a member's role - Admin only
     public function edit(Space $space, User $user)

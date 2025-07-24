@@ -20,22 +20,12 @@ class User extends Authenticatable
     use Notifiable;
     use TwoFactorAuthenticatable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
@@ -43,20 +33,10 @@ class User extends Authenticatable
         'two_factor_secret',
     ];
 
-    /**
-     * The accessors to append to the model's array form.
-     *
-     * @var array<int, string>
-     */
     protected $appends = [
         'profile_photo_url',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -66,33 +46,36 @@ class User extends Authenticatable
     }
 
     /**
-     * The spaces that the user belongs to.
+     * Spaces the user belongs to
      */
     public function spaces()
     {
         return $this->belongsToMany(Space::class)
-                    ->withPivot('role_id') // Includes role_id from pivot table
+                    ->select(['spaces.id', 'spaces.name']) // optional: avoids overfetching
+                    ->withPivot('role_id')
                     ->withTimestamps();
     }
 
     /**
-     * Check if the user has any of the specified roles within a given space.
-     *
-     * @param  \App\Models\Space  $space
-     * @param  string|array  $roleNames
-     * @return bool
+     * Get role ID of user in a space
+     */
+    public function spaceRole($spaceId)
+    {
+        return $this->spaces()
+                    ->where('spaces.id', $spaceId)
+                    ->first()?->pivot->role_id;
+    }
+
+    /**
+     * Check user has one of the roles in a space
      */
     public function hasSpaceRole(Space $space, string|array $roleNames): bool
     {
-        if (is_string($roleNames)) {
-            $roleNames = [$roleNames];
-        }
+        $roleNames = is_string($roleNames) ? [$roleNames] : $roleNames;
 
         $roleIds = Role::whereIn('name', $roleNames)->pluck('id');
 
-        if ($roleIds->isEmpty()) {
-            return false;
-        }
+        if ($roleIds->isEmpty()) return false;
 
         return $this->spaces()
                     ->where('spaces.id', $space->id)
@@ -100,41 +83,23 @@ class User extends Authenticatable
                     ->exists();
     }
 
-    /**
-     * Check if the user is an Admin in the given space.
-     *
-     * @param  \App\Models\Space  $space
-     * @return bool
-     */
     public function isSpaceAdmin(Space $space): bool
     {
         return $this->hasSpaceRole($space, 'Admin');
     }
 
-    /**
-     * Check if the user is a Project Manager in the given space.
-     *
-     * @param  \App\Models\Space  $space
-     * @return bool
-     */
     public function isSpaceProjectManager(Space $space): bool
     {
         return $this->hasSpaceRole($space, 'Project Manager');
     }
 
-    /**
-     * Check if the user is an Employee in the given space.
-     *
-     * @param  \App\Models\Space  $space
-     * @return bool
-     */
     public function isSpaceEmployee(Space $space): bool
     {
         return $this->hasSpaceRole($space, 'Employee');
     }
 
     /**
-     * Projects managed by the user (if they are a project manager).
+     * Projects where user is the manager
      */
     public function managedProjects()
     {
@@ -142,7 +107,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Projects where the user is a member.
+     * Projects where user is a team member
      */
     public function projects()
     {

@@ -19,6 +19,12 @@ class Space extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function members()
+{
+    return $this->belongsToMany(User::class)->withPivot('role_id')->withTimestamps();
+}
+
+
     // A space can have many projects
     public function projects()
     {
