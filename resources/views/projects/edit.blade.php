@@ -121,13 +121,15 @@
     <!-- Deadline -->
     <div class="mb-3">
       <label for="deadline" class="form-label">Deadline</label>
-      <input
-        type="date"
-        name="deadline"
-        id="deadline"
-        class="form-control @error('deadline') is-invalid @enderror"
-        value="{{ old('deadline', $project->deadline ? \Carbon\Carbon::parse($project->deadline)->format('Y-m-d') : '') }}"
-      >
+              <input
+          type="date"
+          name="deadline"
+          id="deadline"
+          class="form-control @error('deadline') is-invalid @enderror"
+          value="{{ old('deadline', $project->deadline ? \Carbon\Carbon::parse($project->deadline)->format('Y-m-d') : '') }}"
+          min="{{ date('Y-m-d') }}"
+        >
+
       <div class="invalid-feedback">
         Please select a valid deadline.
       </div>

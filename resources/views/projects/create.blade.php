@@ -70,7 +70,7 @@
       </div>
     @endif
 
-    <form method="POST" action="{{ route('spaces.projects.store', $space) }}">
+    <form method="POST" action="{{ route('spaces.projects.store', $space) }}" id="createProjectForm" novalidate>
       @csrf
 
       <div class="mb-3">
@@ -87,6 +87,9 @@
           required
           aria-required="true"
         >
+        <div class="invalid-feedback">
+          Please enter the project name.
+        </div>
       </div>
 
       <div class="mb-3">
@@ -103,24 +106,26 @@
       <!-- Deadline -->
       <div class="mb-3">
         <label for="deadline" class="form-label">
-          Deadline 
+          Deadline
         </label>
-                <input
-            type="date"
-            class="form-control"
-            id="deadline"
-            name="deadline"
-            value="{{ old('deadline') }}"
-            required
-            {{-- min="{{ date('Y-m-d') }}"  <!-- This line restricts dates before today --> --}}
-          >
-
+        <input
+          type="date"
+          class="form-control"
+          id="deadline"
+          name="deadline"
+          value="{{ old('deadline') }}"
+          required
+          min="{{ date('Y-m-d') }}"
+        >
+        <div class="invalid-feedback">
+          Please select a valid deadline (today or later).
+        </div>
       </div>
 
       <!-- Priority -->
       <div class="mb-3">
         <label for="priority" class="form-label">
-          Priority 
+          Priority
         </label>
         <select
           class="form-select"
@@ -134,12 +139,10 @@
           <option value="high" {{ old('priority') == 'high' ? 'selected' : '' }}>High</option>
           <option value="urgent" {{ old('priority') == 'urgent' ? 'selected' : '' }}>Urgent</option>
         </select>
+        <div class="invalid-feedback">
+          Please select a priority.
+        </div>
       </div>
-
-      {{-- 
-        No need to add project_manager_id here, 
-        assign it automatically in controller as auth user.
-      --}}
 
       <div class="d-flex gap-2">
         <button type="submit" class="btn btn-primary" title="Create this project">
@@ -162,5 +165,38 @@
 
   <!-- Bootstrap JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Client-side form validation -->
+  <script>
+    (() => {
+      'use strict';
+      const form = document.getElementById('createProjectForm');
+      form.addEventListener('submit', event => {
+        // HTML5 validation check
+        if (!form.checkValidity()) {
+          event.preventDefault();
+          event.stopPropagation();
+          form.classList.add('was-validated');
+          return;
+        }
+
+        // Additional check for deadline >= today
+        const deadlineInput = document.getElementById('deadline');
+        const selectedDate = new Date(deadlineInput.value);
+        const today = new Date();
+        today.setHours(0,0,0,0); // normalize time to 00:00:00
+
+        if (selectedDate < today) {
+          event.preventDefault();
+          event.stopPropagation();
+          alert('Deadline cannot be before today.');
+          deadlineInput.focus();
+          return;
+        }
+
+        form.classList.add('was-validated');
+      });
+    })();
+  </script>
 </body>
 </html>
