@@ -17,10 +17,11 @@ protected $fillable = [
 ];
 
     // Relationship: Project belongs to a Space
-    public function space()
-    {
-        return $this->belongsTo(Space::class);
-    }
+public function space()
+{
+    return $this->belongsTo(Space::class);
+}
+
 
     // Relationship: Project belongs to a User as manager
     public function manager()

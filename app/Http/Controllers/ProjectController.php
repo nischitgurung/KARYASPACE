@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Space;
-use App\Models\Project;
-use App\Models\User;
+use App\Models\{Space, Project, User};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,8 +16,10 @@ class ProjectController extends Controller
 
     public function create(Space $space)
     {
-        $spaceMembers = $space->members;
-        return view('projects.create', compact('space', 'spaceMembers'));
+        return view('projects.create', [
+            'space' => $space,
+            'spaceMembers' => $space->members
+        ]);
     }
 
     public function store(Request $request, Space $space)
@@ -34,30 +34,25 @@ class ProjectController extends Controller
 
         $space->projects()->create($validated);
 
-        return redirect()->route('spaces.show', $space)->with('success', 'Project created successfully!');
+        return redirect()
+            ->route('spaces.show', $space)
+            ->with('success', 'Project created successfully!');
     }
 
     public function edit(Space $space, Project $project)
     {
-        if (
-            Auth::id() !== $project->project_manager_id &&
-            Auth::id() !== $space->created_by
-        ) {
-            abort(403, 'Unauthorized');
-        }
+        $this->authorizeAccess($space, $project);
 
-        $spaceMembers = $space->members;
-        return view('projects.edit', compact('space', 'project', 'spaceMembers'));
+        return view('projects.edit', [
+            'space' => $space,
+            'project' => $project,
+            'spaceMembers' => $space->members
+        ]);
     }
 
     public function update(Request $request, Space $space, Project $project)
     {
-        if (
-            Auth::id() !== $project->project_manager_id &&
-            Auth::id() !== $space->created_by
-        ) {
-            abort(403, 'Unauthorized');
-        }
+        $this->authorizeAccess($space, $project);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -69,33 +64,28 @@ class ProjectController extends Controller
 
         $project->update($validated);
 
-        return redirect()->route('spaces.show', $space)->with('success', 'Project updated successfully!');
+        return redirect()
+            ->route('spaces.show', $space)
+            ->with('success', 'Project updated successfully!');
     }
 
     public function destroy(Space $space, Project $project)
     {
-        if (
-            Auth::id() !== $project->project_manager_id &&
-            Auth::id() !== $space->created_by
-        ) {
-            abort(403, 'Unauthorized');
-        }
-
+        $this->authorize('delete', $project);
         $project->delete();
 
-        return redirect()->route('spaces.show', $space)->with('success', 'Project deleted successfully!');
+        return redirect()
+            ->route('spaces.show', $space)
+            ->with('success', 'Project deleted successfully.');
     }
 
     public function addEmployee(Request $request, Space $space, Project $project)
     {
-        if (
-            Auth::id() !== $project->project_manager_id &&
-            Auth::id() !== $space->created_by
-        ) {
-            abort(403, 'Unauthorized');
-        }
+        $this->authorizeAccess($space, $project);
 
-        $request->validate(['user_id' => 'required|exists:users,id']);
+        $request->validate([
+            'user_id' => 'required|exists:users,id'
+        ]);
 
         $project->employees()->syncWithoutDetaching($request->user_id);
 
@@ -104,15 +94,20 @@ class ProjectController extends Controller
 
     public function removeEmployee(Space $space, Project $project, User $user)
     {
-        if (
-            Auth::id() !== $project->project_manager_id &&
-            Auth::id() !== $space->created_by
-        ) {
-            abort(403, 'Unauthorized');
-        }
+        $this->authorizeAccess($space, $project);
 
         $project->employees()->detach($user->id);
 
         return back()->with('success', 'Employee removed from project.');
+    }
+
+    /**
+     * Shared access logic for Project Manager or Space Creator
+     */
+    protected function authorizeAccess(Space $space, Project $project): void
+    {
+        if (! in_array(Auth::id(), [$project->project_manager_id, $space->created_by])) {
+            abort(403, 'Unauthorized');
+        }
     }
 }
