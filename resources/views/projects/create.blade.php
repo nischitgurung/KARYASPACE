@@ -55,7 +55,7 @@
   </nav>
 
   <!-- Main Content -->
-  <div class="container py-5" style="max-width: 600px;">
+  <div class="container py-5" style="max-width: 600px; padding-bottom: 120px;">
     <h2>Create a New Project in <span class="text-primary">{{ $space->name }}</span></h2>
 
     <!-- Validation Errors -->
@@ -70,7 +70,7 @@
       </div>
     @endif
 
-    <form method="POST" action="{{ route('spaces.projects.store', $space) }}">
+    <form method="POST" action="{{ route('spaces.projects.store', $space) }}" id="createProjectForm" novalidate>
       @csrf
 
       <div class="mb-3">
@@ -85,8 +85,10 @@
           placeholder="e.g. Website Redesign"
           value="{{ old('name') }}"
           required
-          aria-required="true"
         >
+        <div class="invalid-feedback">
+          Please enter the project name.
+        </div>
       </div>
 
       <div class="mb-3">
@@ -102,9 +104,7 @@
 
       <!-- Deadline -->
       <div class="mb-3">
-        <label for="deadline" class="form-label">
-          Deadline 
-        </label>
+        <label for="deadline" class="form-label">Deadline</label>
         <input
           type="date"
           class="form-control"
@@ -112,14 +112,16 @@
           name="deadline"
           value="{{ old('deadline') }}"
           required
+          min="{{ date('Y-m-d') }}"
         >
+        <div class="invalid-feedback">
+          Please select a valid deadline (today or later).
+        </div>
       </div>
 
       <!-- Priority -->
       <div class="mb-3">
-        <label for="priority" class="form-label">
-          Priority 
-        </label>
+        <label for="priority" class="form-label">Priority</label>
         <select
           class="form-select"
           id="priority"
@@ -132,18 +134,16 @@
           <option value="high" {{ old('priority') == 'high' ? 'selected' : '' }}>High</option>
           <option value="urgent" {{ old('priority') == 'urgent' ? 'selected' : '' }}>Urgent</option>
         </select>
+        <div class="invalid-feedback">
+          Please select a priority.
+        </div>
       </div>
 
-      {{-- 
-        No need to add project_manager_id here, 
-        assign it automatically in controller as auth user.
-      --}}
-
       <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary" title="Create this project">
+        <button type="submit" class="btn btn-primary">
           <i class="bi bi-check-circle-fill"></i> Create Project
         </button>
-        <a href="{{ route('spaces.index') }}" class="btn btn-secondary mt-2 mt-sm-0" title="Back to your spaces list">
+        <a href="{{ route('spaces.index') }}" class="btn btn-secondary mt-2 mt-sm-0">
           <i class="bi bi-arrow-left"></i> Back to Spaces
         </a>
       </div>
@@ -151,14 +151,69 @@
   </div>
 
   <!-- Footer -->
-  <footer
-    class="bg-primary text-white text-center py-4 mt-5 position-fixed bottom-0 w-100"
-    style="z-index: 1030;"
-  >
+  <footer class="bg-primary text-white text-center py-4 mt-5">
     <p class="mb-0">&copy; 2025 KaryaSpace. All rights reserved.</p>
   </footer>
 
   <!-- Bootstrap JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Form logic -->
+  <script>
+    (() => {
+      'use strict';
+      const form = document.getElementById('createProjectForm');
+      const deadlineInput = document.getElementById('deadline');
+      const prioritySelect = document.getElementById('priority');
+
+      function autoSetPriority() {
+        const selectedDate = new Date(deadlineInput.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (!deadlineInput.value || prioritySelect.dataset.userChanged === 'true') return;
+
+        const diffDays = Math.ceil((selectedDate - today) / (1000 * 60 * 60 * 24));
+        if (diffDays < 7) prioritySelect.value = 'high';
+        else if (diffDays < 15) prioritySelect.value = 'medium';
+        else prioritySelect.value = 'low';
+      }
+
+      prioritySelect.addEventListener('change', () => {
+        prioritySelect.dataset.userChanged = 'true';
+      });
+
+      deadlineInput.addEventListener('change', autoSetPriority);
+
+      form.addEventListener('submit', event => {
+        if (!form.checkValidity()) {
+          event.preventDefault();
+          event.stopPropagation();
+          form.classList.add('was-validated');
+          return;
+        }
+
+        const selectedDate = new Date(deadlineInput.value);
+        const today = new Date();
+        today.setHours(0,0,0,0);
+
+        if (selectedDate < today) {
+          event.preventDefault();
+          event.stopPropagation();
+          alert('Deadline cannot be before today.');
+          deadlineInput.focus();
+          return;
+        }
+
+        form.classList.add('was-validated');
+      });
+
+      window.addEventListener('DOMContentLoaded', () => {
+        if (deadlineInput.value && !prioritySelect.value) {
+          autoSetPriority();
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
