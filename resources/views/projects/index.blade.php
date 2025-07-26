@@ -24,6 +24,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      height: 100%;
     }
     .project-card .card-text {
       flex-grow: 1;
@@ -34,12 +35,65 @@
       flex-wrap: wrap;
       gap: 0.5rem;
       margin-top: auto;
+      justify-content: flex-start;
     }
-    .project-card .btn {
-      flex: 1 1 auto;
-      min-width: calc(33% - 0.5rem);
+
+    /* Equal width and alignment for all buttons, links, and forms inside card-actions */
+    .project-card .card-actions > * {
+      flex: 1 1 calc(25% - 0.5rem);
+      min-width: 130px;
+      display: flex;
     }
-    @media (max-width: 767.98px) {
+
+    /* Buttons and links inside direct children flex to fill container */
+    .project-card .card-actions > * > button,
+    .project-card .card-actions > a {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      height: 38px; /* consistent button height */
+    }
+
+    /* Invite button specific styling */
+    .project-card .card-actions button.invite-btn {
+      flex: 1 1 calc(25% - 0.5rem);
+      min-width: 130px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      background-color: #4ab432;
+      color: #fff;
+      border: none;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      height: 38px;
+    }
+    .project-card .card-actions button.invite-btn:hover {
+      background-color: #3a8c27;
+    }
+
+    /* Delete button form styling */
+    .project-card .card-actions form {
+      margin: 0;
+      display: flex;
+    }
+
+    .project-card .card-actions form button {
+      width: 100%;
+      height: 38px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 991.98px) {
+      .project-card .card-actions > * {
+        flex: 1 1 calc(50% - 0.5rem);
+        min-width: auto;
+      }
+    }
+    @media (max-width: 575.98px) {
       .header-actions {
         flex-direction: column;
         gap: 0.5rem;
@@ -47,7 +101,12 @@
       .header-actions .btn {
         width: 100%;
       }
+      .project-card .card-actions > * {
+        flex: 1 1 100%;
+        min-width: auto;
+      }
     }
+
     .footer {
       position: sticky;
       bottom: 0;
@@ -115,36 +174,37 @@
           @endphp
           <div class="col">
             <div class="card mb-2 shadow-sm h-100 project-card">
-              <div class="card-body">
+              <div class="card-body d-flex flex-column">
                 <h5 class="card-title fw-bold text-primary">{{ $project->name }}</h5>
                 <p class="card-text text-muted small">{{ $project->description ?? 'No description provided for this project.' }}</p>
 
-                <div class="d-flex flex-wrap gap-2 mb-3">
-                  @if($project->deadline)
-                    <span class="badge bg-light text-dark border border-secondary py-2 px-3 d-inline-flex align-items-center">
-                      <i class="bi bi-calendar-event me-1 text-primary"></i>
-                      Deadline: {{ \Carbon\Carbon::parse($project->deadline)->format('M d, Y') }}
-                    </span>
-                  @endif
+                <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+                  <div class="d-flex flex-wrap gap-2 flex-grow-1">
+                    @if($project->deadline)
+                      <span class="badge bg-light text-dark border border-secondary py-2 px-3 d-inline-flex align-items-center">
+                        <i class="bi bi-calendar-event me-1 text-primary"></i>
+                        Deadline: {{ \Carbon\Carbon::parse($project->deadline)->format('M d, Y') }}
+                      </span>
+                    @endif
 
-                  @php
-                    $priorityColors = [
-                      'low' => 'success',
-                      'medium' => 'warning',
-                      'high' => 'danger',
-                      'urgent' => 'danger'
-                    ];
-                    $priority = strtolower($project->priority);
-                    $badgeColor = $priorityColors[$priority] ?? 'secondary';
-                  @endphp
-                  @if($project->priority)
-                    <span class="badge bg-{{ $badgeColor }} py-2 px-3 d-inline-flex align-items-center">
-                      <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ ucfirst($project->priority) }} Priority
-                    </span>
-                  @endif
+                    @php
+                      $priorityColors = [
+                        'low' => 'success',
+                        'medium' => 'warning',
+                        'high' => 'danger',
+                        'urgent' => 'danger'
+                      ];
+                      $priority = strtolower($project->priority);
+                      $badgeColor = $priorityColors[$priority] ?? 'secondary';
+                    @endphp
+                    @if($project->priority)
+                      <span class="badge bg-{{ $badgeColor }} py-2 px-3 d-inline-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ ucfirst($project->priority) }} Priority
+                      </span>
+                    @endif
+                  </div>
 
-                  {{-- Total Weightage Badge --}}
-                  <span class="badge bg-info text-white py-2 px-3 d-inline-flex align-items-center ms-auto">
+                  <span class="badge bg-info text-white py-2 px-3 d-inline-flex align-items-center">
                     <i class="bi bi-bar-chart-fill me-1"></i> Total Task Weightage: {{ $totalWeightage }}%
                   </span>
                 </div>
@@ -158,18 +218,17 @@
                     <i class="bi bi-pencil me-1"></i> Edit
                   </a>
 
-                  <form action="{{ route('spaces.projects.destroy', [$space->id, $project->id]) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this project? This action cannot be undone.');" class="d-inline">
+                  <form action="{{ route('spaces.projects.destroy', [$space->id, $project->id]) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this project? This action cannot be undone.');">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-outline-danger w-100">
+                    <button type="submit" class="btn btn-outline-danger">
                       <i class="bi bi-trash me-1"></i> Delete
                     </button>
                   </form>
 
                   <button
                     type="button"
-                    class="btn text-white"
-                    style="background-color: #4ab432;"
+                    class="invite-btn"
                     onclick="openInviteModal('{{ $space->id }}', '{{ $project->id }}')"
                   >
                     <i class="bi bi-person-plus me-1"></i> Invite

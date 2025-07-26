@@ -67,8 +67,7 @@
       <div class="list-group">
         @php
           $currentUserId = auth()->id();
-          $adminRoleId = \App\Models\Role::where('name', 'Admin')->value('id');
-          $canManage = $space->created_by === $currentUserId || optional($space->users->firstWhere('id', $currentUserId))->pivot->role_id == $adminRoleId;
+          // $canManage, $adminRoleId, and $pmRoleId should be passed from controller
         @endphp
 
         @foreach($members as $user)
@@ -84,6 +83,8 @@
                   <i class="bi bi-three-dots-vertical fs-5"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
+
+                  <!-- Make Admin -->
                   <li>
                     <form method="POST" action="{{ route('spaces.members.update', [$space->id, $user->id]) }}">
                       @csrf
@@ -94,6 +95,22 @@
                       </button>
                     </form>
                   </li>
+
+                  <!-- Make Project Manager -->
+                  <li>
+                    <form method="POST" action="{{ route('spaces.members.update', [$space->id, $user->id]) }}">
+                      @csrf
+                      @method('PUT')
+                      <input type="hidden" name="role_id" value="{{ $pmRoleId }}">
+                      <button type="submit" class="dropdown-item">
+                        <i class="bi bi-briefcase-fill text-primary me-2"></i> Make Project Manager
+                      </button>
+                    </form>
+                  </li>
+
+                  <li><hr class="dropdown-divider"></li>
+
+                  <!-- Remove from Space -->
                   <li>
                     <form method="POST" action="{{ route('spaces.members.destroy', [$space->id, $user->id]) }}" onsubmit="return confirm('Kick out {{ $user->name }} from this space?');">
                       @csrf
@@ -103,6 +120,7 @@
                       </button>
                     </form>
                   </li>
+
                 </ul>
               </div>
             @endif
