@@ -17,17 +17,14 @@
             <i class="bi bi-kanban-fill text-primary me-2 fs-3"></i>
             <span>KaryaSpace</span>
         </a>
-        <!-- Hamburger button: only visible on small screens -->
         <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarUserLinks" aria-controls="navbarUserLinks" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <!-- Desktop: No profile/logout links visible, only hamburger toggler triggers collapse -->
         <div class="collapse navbar-collapse d-lg-none" id="navbarUserLinks">
             <ul class="navbar-nav ms-auto">
-      <li class="nav-item">
-    <a class="nav-link" href="{{ route('spaces.index') }}"><i class="bi bi-rocket-takeoff-fill"></i> Spaces</a>
-</li>
-
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('spaces.index') }}"><i class="bi bi-rocket-takeoff-fill"></i> Spaces</a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('profile.show') }}">
                         <i class="bi bi-person"></i> Profile
@@ -92,44 +89,48 @@
                         <h3 class="text-success mb-0 fw-bold" style="font-family: 'Dancing Script', cursive;">{{ $completedTasks }}</h3>
                     </div>
                 </div>
-                </div>
-                </div>
-
-                <!-- Recent Tasks -->
-                <div class="card shadow border-0 rounded-4 mt-5" style="background:rgba(255,255,255,0.85);backdrop-filter:blur(8px);">
-                    <div class="card-header bg-transparent d-flex align-items-center rounded-top-4 border-0" style="padding: 1.25rem 1.5rem;">
-                        <i class="bi bi-clock-history text-dark me-2"></i>
-                        <h5 class="mb-0 fw-semibold" style="font-family: 'Times New Roman', Times, serif; letter-spacing: -0.5px;">Recent Tasks</h5>
-                    </div>
-                    <div class="card-body p-0">
-                        @if ($recentTasks->isEmpty())
-                        <div class="p-5 text-center text-muted" style="font-family: 'Times New Roman', Times, serif;">
-                            <i class="bi bi-emoji-frown fs-1"></i>
-                            <div class="mt-2">No recent tasks to display.</div>
-                        </div>
-                        @else
-                        <ul class="list-group list-group-flush">
-                            @foreach ($recentTasks as $task)
-                            <li class="list-group-item d-flex justify-content-between align-items-center py-3 border-0 border-bottom" style="background:transparent;font-family: 'Times New Roman', Times, serif;">
-                                <div>
-                                    <strong class="fs-6" style="color:#1d1d1f;">{{ $task->title }}</strong><br>
-                                    <small class="text-muted"><i class="bi bi-calendar-event me-1"></i>{{ $task->created_at->diffForHumans() }}</small>
-                                </div>
-                                <span class="badge rounded-pill px-3 py-2 fs-6
-                                    @if ($task->status == 'pending')" style="background:#f5f5f7;color:#86868b;"
-                                    @elseif ($task->status == 'in progress')" style="background:#e5f1fb;color:#0071e3;"
-                                    @else" style="background:#e6f5ea;color:#299a47;"
-                                    @endif
-                                >
-                                    {{ ucfirst($task->status) }}
-                                </span>
-                            </li>
-                            @endforeach
-                        </ul>
-                        @endif
-                    </div>
-                </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Recent Tasks -->
+    <div class="card shadow border-0 rounded-4 mt-5" style="background:rgba(255,255,255,0.85);backdrop-filter:blur(8px);">
+        <div class="card-header bg-transparent d-flex align-items-center rounded-top-4 border-0" style="padding: 1.25rem 1.5rem;">
+            <i class="bi bi-clock-history text-dark me-2"></i>
+            <h5 class="mb-0 fw-semibold" style="font-family: 'Times New Roman', Times, serif; letter-spacing: -0.5px;">Recent Tasks</h5>
+        </div>
+        <div class="card-body p-0">
+            @if ($recentTasks->isEmpty())
+            <div class="p-5 text-center text-muted" style="font-family: 'Times New Roman', Times, serif;">
+                <i class="bi bi-emoji-frown fs-1"></i>
+                <div class="mt-2">No recent tasks to display.</div>
+            </div>
+            @else
+            <ul class="list-group list-group-flush">
+                @foreach ($recentTasks as $task)
+                <li class="list-group-item d-flex justify-content-between align-items-center py-3 border-0 border-bottom" style="background:transparent;font-family: 'Times New Roman', Times, serif;">
+                    <div>
+                        <strong class="fs-6" style="color:#1d1d1f;">{{ $task->title }}</strong><br>
+                        <small class="text-muted">
+                            <i class="bi bi-calendar-event me-1"></i>
+                            {{ $task->created_at->format('d F Y, h:i A') }}
+                        </small>
+                    </div>
+                    <span class="badge rounded-pill px-3 py-2 fs-6
+                        @if ($task->status == 'pending')" style="background:#f5f5f7;color:#86868b;"
+                        @elseif ($task->status == 'in progress')" style="background:#e5f1fb;color:#0071e3;"
+                        @else" style="background:#e6f5ea;color:#299a47;"
+                        @endif
+                    >
+                        {{ ucfirst($task->status) }}
+                    </span>
+                </li>
+                @endforeach
+            </ul>
+            @endif
+        </div>
+    </div>
+</div>
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
