@@ -40,7 +40,7 @@
 
     /* Equal width and alignment for all buttons, links, and forms inside card-actions */
     .project-card .card-actions > * {
-      flex: 1 1 calc(25% - 0.5rem);
+      flex: 1 1 calc(33.33% - 0.5rem); /* Adjusted for 3 buttons now */
       min-width: 130px;
       display: flex;
     }
@@ -54,25 +54,6 @@
       justify-content: center;
       gap: 0.3rem;
       height: 38px; /* consistent button height */
-    }
-
-    /* Invite button specific styling */
-    .project-card .card-actions button.invite-btn {
-      flex: 1 1 calc(25% - 0.5rem);
-      min-width: 130px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.3rem;
-      background-color: #4ab432;
-      color: #fff;
-      border: none;
-      border-radius: 0.25rem;
-      cursor: pointer;
-      height: 38px;
-    }
-    .project-card .card-actions button.invite-btn:hover {
-      background-color: #3a8c27;
     }
 
     /* Delete button form styling */
@@ -226,13 +207,6 @@
                     </button>
                   </form>
 
-                  <button
-                    type="button"
-                    class="invite-btn"
-                    onclick="openInviteModal('{{ $space->id }}', '{{ $project->id }}')"
-                  >
-                    <i class="bi bi-person-plus me-1"></i> Invite
-                  </button>
                 </div>
               </div>
             </div>
@@ -246,112 +220,6 @@
     <p class="mb-0">© 2025 KaryaSpace. All rights reserved.</p>
   </footer>
 
-  <!-- Invite Modal -->
-  <div class="modal fade" id="inviteModal" tabindex="-1" aria-labelledby="inviteModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content shadow-lg">
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title" id="inviteModalLabel"><i class="bi bi-person-plus me-2"></i> Share Invite Link</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label for="roleSelect" class="form-label fw-bold">Select Role for Invitation</label>
-            <select id="roleSelect" class="form-select form-select-lg">
-              <option value="Member" selected>Member</option>
-              <option value="Project Manager">Project Manager</option>
-              <option value="Admin">Admin</option>
-            </select>
-            <div class="form-text">Choose the role for the user you are inviting to this project.</div>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label fw-bold">Generated Invite Link</label>
-            <div class="input-group">
-              <input type="text" class="form-control" id="inviteLinkInput" readonly aria-label="Invite link">
-              <button class="btn btn-outline-secondary" type="button" onclick="copyInviteLink()" title="Copy to clipboard">
-                <i class="bi bi-clipboard"></i> Copy
-              </button>
-            </div>
-          </div>
-          <p class="text-center text-muted small">Share this link directly or via social media:</p>
-          <div class="d-flex justify-content-center gap-3">
-            <a id="whatsappShare" target="_blank" class="btn btn-success btn-lg rounded-circle" title="Share on WhatsApp">
-              <i class="bi bi-whatsapp"></i>
-            </a>
-            <a id="facebookShare" target="_blank" class="btn btn-primary btn-lg rounded-circle" title="Share on Facebook">
-              <i class="bi bi-facebook"></i>
-            </a>
-            <a id="emailShare" target="_blank" class="btn btn-danger btn-lg rounded-circle" title="Share via Email">
-              <i class="bi bi-envelope-fill"></i>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    let currentSpaceId = null;
-    let currentProjectId = null;
-
-    function openInviteModal(spaceId, projectId) {
-      currentSpaceId = spaceId;
-      currentProjectId = projectId;
-      document.getElementById('roleSelect').value = 'Member';
-      generateInviteLink(spaceId, projectId, 'Member');
-      const modal = new bootstrap.Modal(document.getElementById('inviteModal'));
-      modal.show();
-    }
-
-    document.getElementById('roleSelect').addEventListener('change', function() {
-      if (currentSpaceId && currentProjectId) {
-        generateInviteLink(currentSpaceId, currentProjectId, this.value);
-      }
-    });
-
-    function generateInviteLink(spaceId, projectId, role) {
-      const encodedRole = encodeURIComponent(role);
-      const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-
-      fetch(`/spaces/${spaceId}/projects/${projectId}/invite-link?role=${encodedRole}`, {
-        method: 'GET',
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRF-TOKEN': csrfToken
-        }
-      })
-      .then(response => {
-        if (!response.ok) throw new Error('Network response was not ok ' + response.statusText);
-        return response.json();
-      })
-      .then(data => {
-        const link = data.invite_link;
-        document.getElementById('inviteLinkInput').value = link;
-
-        const encodedLink = encodeURIComponent(link);
-        document.getElementById('whatsappShare').href = `https://wa.me/?text=You're invited to join a project on KaryaSpace! Click here: ${encodedLink}`;
-        document.getElementById('facebookShare').href = `https://www.facebook.com/sharer/sharer.php?u=${encodedLink}`;
-        document.getElementById('emailShare').href = `mailto:?subject=Join My KaryaSpace Project&body=You're invited to join a project on KaryaSpace! Click here: ${encodedLink}`;
-      })
-      .catch(err => {
-        console.error('Failed to generate invite link:', err);
-        alert('Error generating invite link. Please try again.');
-      });
-    }
-
-    function copyInviteLink() {
-      const input = document.getElementById('inviteLinkInput');
-      input.select();
-      input.setSelectionRange(0, 99999);
-      try {
-        document.execCommand('copy');
-        alert('Invite link copied to clipboard!');
-      } catch (err) {
-        alert('Could not copy link. Please copy it manually.');
-      }
-    }
-  </script>
 </body>
 </html>
