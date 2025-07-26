@@ -41,6 +41,10 @@
             border-left-width: 5px; /* Priority indicator */
             transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
             margin-bottom: 1rem;
+            max-height: 700px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         .task-card:hover {
             box-shadow: 0 .5rem 1rem rgba(0,0,0,.1) !important;
@@ -60,6 +64,7 @@
         .task-card .card-text {
             color: #6c757d;
             font-size: 0.9em;
+            flex-grow: 0;
         }
         /* Subtle Task Actions */
         .task-actions {
@@ -68,6 +73,32 @@
         }
         .task-card:hover .task-actions {
             opacity: 1;
+        }
+        /* Comments Section */
+        .comments-section {
+            margin-top: 1rem;
+            max-height: 180px;
+            overflow-y: auto;
+            border-top: 1px solid #dee2e6;
+            padding-top: 0.75rem;
+        }
+        .comment {
+            margin-bottom: 0.75rem;
+        }
+        .comment .comment-author {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .comment .comment-time {
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+        .comment .comment-content {
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+        .comment-form textarea {
+            resize: vertical;
         }
         .footer {
             margin-top: 3rem;
@@ -169,7 +200,7 @@
                         <div class="column-body">
                             @forelse($tasksInColumn as $task)
                                 <div class="card task-card" data-priority="{{ strtolower($task->priority ?? '') }}">
-                                    <div class="card-body">
+                                    <div class="card-body d-flex flex-column">
                                         <div class="d-flex justify-content-between align-items-start mb-2">
                                             <h5 class="card-title">{{ $task->title }}</h5>
                                             @if($task->priority)
@@ -201,7 +232,31 @@
                                             </div>
                                         @endif
 
-                                        <p class="card-text">{{ $task->description ?? 'No description provided.' }}</p>
+                                        <p class="card-text flex-grow-0">{{ $task->description ?? 'No description provided.' }}</p>
+
+                                        {{-- Comments Section --}}
+                                        <div class="comments-section flex-grow-1">
+                                            <h6>Comments ({{ $task->comments->count() }})</h6>
+                                            @forelse ($task->comments as $comment)
+                                                <div class="comment">
+                                                    <div class="comment-author">{{ $comment->user->name ?? 'Unknown' }}</div>
+                                                    <div class="comment-time">{{ $comment->created_at->diffForHumans() }}</div>
+                                                    <div class="comment-content">{{ $comment->content }}</div>
+                                                </div>
+                                            @empty
+                                                <div class="text-muted fst-italic small">No comments yet.</div>
+                                            @endforelse
+                                        </div>
+
+                                        {{-- Add comment form --}}
+                                        <form method="POST" action="{{ route('spaces.projects.tasks.comments.store', ['space' => $space->id, 'project' => $project->id, 'task' => $task->id]) }}" class="comment-form mt-3">
+                                            @csrf
+                                            <textarea name="content" rows="2" placeholder="Add a comment..." class="form-control @error('content') is-invalid @enderror" required></textarea>
+                                            @error('content')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                            <button type="submit" class="btn btn-sm btn-primary mt-2">Post Comment</button>
+                                        </form>
 
                                         <div class="task-actions text-end mt-3">
                                             <a href="{{ route('spaces.projects.tasks.edit', ['space' => $space->id, 'project' => $project->id, 'task' => $task->id]) }}" class="btn btn-sm btn-outline-secondary">

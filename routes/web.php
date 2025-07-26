@@ -93,3 +93,6 @@ Route::middleware([
     Route::get('/invite/{token}', [InviteController::class, 'accept'])->name('invite.accept');
     Route::post('/join-invite', [InviteController::class, 'handleJoin'])->name('invite.handle');
 });
+Route::post('spaces/{space}/projects/{project}/tasks/{task}/comments', [CommentController::class, 'store'])
+    ->name('spaces.projects.tasks.comments.store')
+    ->middleware('auth');
