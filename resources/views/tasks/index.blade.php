@@ -10,90 +10,67 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
     <style>
         body {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            background-color: #f8f9fa; /* A slightly off-white background */
-            font-family: 'Inter', sans-serif; /* Using Inter font */
+            background-color: #f8f9fa; /* Lighter page background */
         }
-        main {
-            flex: 1;
-            padding-top: 2rem;
-            padding-bottom: 80px; /* Adjust based on footer height */
+        .header-actions {
+            flex-shrink: 0;
         }
-        .footer {
-            position: sticky;
-            bottom: 0;
-            width: 100%;
-            z-index: 1030;
-        }
-        /* Kanban Board Styles */
-        .task-board {
+        /* Task Board Grid Layout */
+        .task-board-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Adjusted minmax for better fit */
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 1.5rem;
+            align-items: start;
         }
         .task-column {
-            background-color: #e9ecef;
-            border-radius: 0.75rem; /* Slightly more rounded corners */
-            padding: 1.25rem; /* Slightly more padding */
-            box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.05); /* Subtle shadow for columns */
+            background-color: #eff2f5; /* Column background */
+            border-radius: 0.75rem; /* Softer corners */
+            min-height: 200px;
         }
-        .task-column h4 {
-            font-weight: bold;
-            margin-bottom: 1rem;
-            padding-bottom: 0.75rem; /* Increased padding */
-            border-bottom: 2px solid #ced4da;
-            color: #343a40; /* Darker heading color */
+        .column-header {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #dee2e6;
         }
+        .column-body {
+            padding: 1rem;
+            height: 100%;
+        }
+        /* Task Card Styling */
         .task-card {
-            background-color: #fff;
-            border: 1px solid #dee2e6;
-            border-left-width: 5px;
+            border: 1px solid #e9ecef;
+            border-left-width: 5px; /* Priority indicator */
+            transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
             margin-bottom: 1rem;
-            border-radius: 0.5rem; /* Rounded corners for cards */
-            transition: all 0.2s ease-in-out; /* Smooth transition for hover effects */
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Light shadow for cards */
         }
         .task-card:hover {
-            box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.1); /* More prominent shadow on hover */
-            transform: translateY(-3px); /* Slight lift on hover */
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.1) !important;
+            transform: translateY(-3px);
         }
-        .task-card-body {
-            padding: 1rem;
-        }
+        /* Priority Border Colors */
+        .task-card[data-priority="low"] { border-left-color: #198754; }
+        .task-card[data-priority="medium"] { border-left-color: #ffc107; }
+        .task-card[data-priority="high"] { border-left-color: #fd7e14; }
+        .task-card[data-priority="urgent"] { border-left-color: #dc3545; }
+        .task-card[data-priority=""] { border-left-color: #6c757d; }
+
         .task-card .card-title {
             font-weight: 600;
-            color: #212529; /* Darker title color */
+            margin-bottom: 0.5rem;
         }
+        .task-card .card-text {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        /* Subtle Task Actions */
         .task-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
         }
-        .task-actions .btn {
-            flex-grow: 1;
-            border-radius: 0.375rem; /* Rounded buttons */
+        .task-card:hover .task-actions {
+            opacity: 1;
         }
-
-        /* Priority-based border colors for task cards */
-        .border-low { border-left-color: #198754; } /* Green */
-        .border-medium { border-left-color: #ffc107; } /* Yellow */
-        .border-high { border-left-color: #dc3545; } /* Red */
-        .border-default { border-left-color: #6c757d; } /* Grey */
-
-        /* Responsive adjustments */
-        @media (max-width: 767.98px) {
-            .header-actions {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-            .header-actions .btn {
-                width: 100%;
-            }
-            .task-board {
-                grid-template-columns: 1fr; /* Single column on small screens */
-            }
+        .footer {
+            margin-top: 3rem;
         }
     </style>
 </head>
@@ -123,13 +100,13 @@
         </div>
     </nav>
 
-    <main class="container">
+    <main class="container py-5">
         {{-- Header --}}
-        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-5">
             <div class="mb-3 mb-md-0">
                 <h2 class="fw-bold">{{ $project->name }} - Tasks</h2>
                 <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
+                    <ol class="breadcrumb bg-transparent p-0 m-0">
                         <li class="breadcrumb-item"><a href="{{ route('spaces.index') }}">Spaces</a></li>
                         <li class="breadcrumb-item"><a href="{{ route('spaces.projects.index', $space->id) }}">{{ $space->name }}</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Tasks</li>
@@ -137,7 +114,7 @@
                 </nav>
             </div>
             <div class="d-flex align-items-center gap-2 flex-wrap header-actions">
-                <a href="{{ route('spaces.projects.tasks.create', ['space' => $space->id, 'project' => $project->id]) }}" class="btn btn-success d-flex align-items-center justify-content-center gap-2">
+                <a href="{{ route('spaces.projects.tasks.create', ['space' => $space->id, 'project' => $project->id]) }}" class="btn btn-primary d-flex align-items-center justify-content-center gap-2 shadow-sm">
                     <i class="bi bi-plus-circle"></i> Add New Task
                 </a>
                 <a href="{{ route('spaces.projects.index', $space->id) }}" class="btn btn-secondary d-flex align-items-center justify-content-center gap-2">
@@ -162,82 +139,86 @@
 
         {{-- Task Board --}}
         @if($project->tasks->isEmpty())
-            <div class="alert alert-info text-center py-5 rounded-3 shadow-sm">
-                <h4 class="alert-heading">No tasks here yet! 🚧</h4>
-                <p>Get started by adding the first task to this project.</p>
-                <hr>
-                <a href="{{ route('spaces.projects.tasks.create', ['space' => $space->id, 'project' => $project->id]) }}" class="btn btn-info px-4 py-2">
+            <div class="text-center py-5 px-4 bg-white rounded-3 shadow-sm">
+                <i class="bi bi-journal-check" style="font-size: 4rem; color: #6c757d;"></i>
+                <h4 class="mt-3 fw-bold">No tasks here yet!</h4>
+                <p class="text-muted">Get started by adding the first task to your project.</p>
+                <a href="{{ route('spaces.projects.tasks.create', ['space' => $space->id, 'project' => $project->id]) }}" class="btn btn-primary px-4 py-2 mt-2">
                     <i class="bi bi-plus-circle me-1"></i> Create Your First Task
                 </a>
             </div>
         @else
-            <div class="task-board">
+            <div class="task-board-container">
                 @php
-                    // Define columns and their corresponding statuses, aligned with Task model
                     $columns = [
-                        'To Do' => 'pending',
+                        'To Do' => 'to_do',
                         'In Progress' => 'in_progress',
-                        'Completed' => 'completed'
+                        'Done' => 'done'
                     ];
                 @endphp
 
                 @foreach ($columns as $columnTitle => $statusValue)
-                    <div class="task-column">
-                        <h4>{{ $columnTitle }}</h4>
-                        @php
-                            // Filter tasks for the current column's status
-                            $tasksInColumn = $project->tasks->where('status', $statusValue);
-                        @endphp
+                    @php
+                        $tasksInColumn = $project->tasks->where('status', $statusValue);
+                    @endphp
+                    <div class="task-column shadow-sm">
+                        <div class="column-header d-flex justify-content-between align-items-center bg-white">
+                            <h5 class="mb-0 fw-bold">{{ $columnTitle }}</h5>
+                            <span class="badge bg-primary-subtle text-primary-emphasis rounded-pill">{{ $tasksInColumn->count() }}</span>
+                        </div>
+                        <div class="column-body">
+                            @forelse($tasksInColumn as $task)
+                                <div class="card task-card" data-priority="{{ strtolower($task->priority ?? '') }}">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h5 class="card-title">{{ $task->title }}</h5>
+                                            @if($task->priority)
+                                                @php
+                                                    $priorityColors = [
+                                                        'low' => 'success',
+                                                        'medium' => 'warning',
+                                                        'high' => 'danger',
+                                                        'urgent' => 'danger'
+                                                    ];
+                                                    $badgeColor = $priorityColors[strtolower($task->priority)] ?? 'secondary';
+                                                @endphp
+                                                <span class="badge bg-{{ $badgeColor }} text-capitalize flex-shrink-0 ms-2">{{ $task->priority }}</span>
+                                            @endif
+                                        </div>
 
-                        @forelse($tasksInColumn as $task)
-                            @php
-                                // Determine the border color based on task priority
-                                $priorityClass = 'border-default';
-                                if ($task->priority) {
-                                    $priorityClass = 'border-' . strtolower($task->priority);
-                                }
-                            @endphp
-                            <div class="card task-card shadow-sm {{ $priorityClass }}">
-                                <div class="card-body task-card-body">
-                                    {{-- Use $task->title as per Task model --}}
-                                    <h5 class="card-title">{{ $task->title }}</h5>
-                                    <p class="card-text text-muted small">{{ $task->description ?? 'No description.' }}</p>
-
-                                    <div class="d-flex flex-wrap gap-2 mb-3">
-                                        {{-- Priority Badge --}}
-                                        @if($task->priority)
-                                            @php
-                                                $priorityColors = [
-                                                    'low' => 'success',
-                                                    'medium' => 'warning',
-                                                    'high' => 'danger',
-                                                ];
-                                                $badgeColor = $priorityColors[strtolower($task->priority)] ?? 'secondary';
-                                            @endphp
-                                            <span class="badge bg-{{ $badgeColor }}"><i class="bi bi-flag-fill me-1"></i> {{ ucfirst($task->priority) }}</span>
-                                        @endif
-                                        {{-- Due Date Badge --}}
                                         @if($task->due_date)
-                                            <span class="badge text-bg-light border"><i class="bi bi-calendar-event me-1"></i> {{ \Carbon\Carbon::parse($task->due_date)->format('M d, Y') }}</span>
+                                            <div class="mb-3">
+                                               <span class="badge text-bg-light border"><i class="bi bi-calendar-event me-1"></i> {{ \Carbon\Carbon::parse($task->due_date)->format('M d, Y') }}</span>
+                                            </div>
                                         @endif
-                                    </div>
+                                        
+                                        {{-- Added weightage badge --}}
+                                        @if(is_numeric($task->weightage) && $task->weightage >= 0)
+                                            <div class="mb-2">
+                                                <span class="badge text-bg-info border">
+                                                    <i class="bi bi-percent me-1"></i> Weightage: {{ $task->weightage }}%
+                                                </span>
+                                            </div>
+                                        @endif
 
-                                    <div class="task-actions">
-                                        <a href="{{ route('spaces.projects.tasks.edit', ['space' => $space->id, 'project' => $project->id, 'task' => $task->id]) }}" class="btn btn-sm btn-outline-secondary">
-                                            <i class="bi bi-pencil me-1"></i> Edit
-                                        </a>
-                                        {{-- Delete button now triggers a modal --}}
-                                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ $task->id }}" data-task-title="{{ $task->title }}">
-                                            <i class="bi bi-trash me-1"></i> Delete
-                                        </button>
+                                        <p class="card-text">{{ $task->description ?? 'No description provided.' }}</p>
+
+                                        <div class="task-actions text-end mt-3">
+                                            <a href="{{ route('spaces.projects.tasks.edit', ['space' => $space->id, 'project' => $project->id, 'task' => $task->id]) }}" class="btn btn-sm btn-outline-secondary">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteTaskModal" data-task-id="{{ $task->id }}" data-task-title="{{ $task->title }}">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        @empty
-                            <div class="text-center text-muted p-3">
-                                <small>No tasks in this column.</small>
-                            </div>
-                        @endforelse
+                            @empty
+                                <div class="text-center text-muted p-3">
+                                    <small>No tasks in this column.</small>
+                                </div>
+                            @endforelse
+                        </div>
                     </div>
                 @endforeach
             </div>
@@ -273,24 +254,22 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // JavaScript to handle the delete confirmation modal
         document.addEventListener('DOMContentLoaded', function () {
             const deleteTaskModal = document.getElementById('deleteTaskModal');
-            deleteTaskModal.addEventListener('show.bs.modal', function (event) {
-                // Button that triggered the modal
-                const button = event.relatedTarget;
-                // Extract info from data-bs-* attributes
-                const taskId = button.getAttribute('data-task-id');
-                const taskTitle = button.getAttribute('data-task-title');
+            if (deleteTaskModal) {
+                deleteTaskModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    const taskId = button.getAttribute('data-task-id');
+                    const taskTitle = button.getAttribute('data-task-title');
 
-                // Update the modal's content.
-                const modalTaskTitle = deleteTaskModal.querySelector('#modalTaskTitle');
-                const deleteTaskForm = deleteTaskModal.querySelector('#deleteTaskForm');
+                    const modalTaskTitle = deleteTaskModal.querySelector('#modalTaskTitle');
+                    const deleteTaskForm = deleteTaskModal.querySelector('#deleteTaskForm');
 
-                modalTaskTitle.textContent = taskTitle;
-                // Set the form action dynamically
-                deleteTaskForm.action = `{{ route('spaces.projects.tasks.destroy', ['space' => $space->id, 'project' => $project->id, 'task' => '__TASK_ID__']) }}`.replace('__TASK_ID__', taskId);
-            });
+                    modalTaskTitle.textContent = taskTitle;
+                    const actionUrl = `{{ url('spaces/'.$space->id.'/projects/'.$project->id.'/tasks') }}/${taskId}`;
+                    deleteTaskForm.setAttribute('action', actionUrl);
+                });
+            }
         });
     </script>
 </body>

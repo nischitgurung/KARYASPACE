@@ -92,7 +92,7 @@
         <a href="{{ route('spaces.index') }}" class="btn btn-secondary d-flex align-items-center justify-content-center gap-2">
           <i class="bi bi-arrow-left"></i> Back to Spaces
         </a>
-         <a href="{{ route('spaces.members.index', $space->id) }}" class="btn btn-info d-flex align-items-center justify-content-center gap-2">
+        <a href="{{ route('spaces.members.index', $space->id) }}" class="btn btn-info d-flex align-items-center justify-content-center gap-2">
           <i class="bi bi-people-fill"></i> View Members
         </a>
       </div>
@@ -110,6 +110,9 @@
     @else
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         @foreach($space->projects as $project)
+          @php
+            $totalWeightage = $project->tasks->sum('weightage') ?? 0;
+          @endphp
           <div class="col">
             <div class="card mb-2 shadow-sm h-100 project-card">
               <div class="card-body">
@@ -139,6 +142,11 @@
                       <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ ucfirst($project->priority) }} Priority
                     </span>
                   @endif
+
+                  {{-- Total Weightage Badge --}}
+                  <span class="badge bg-info text-white py-2 px-3 d-inline-flex align-items-center ms-auto">
+                    <i class="bi bi-bar-chart-fill me-1"></i> Total Task Weightage: {{ $totalWeightage }}%
+                  </span>
                 </div>
 
                 <div class="card-actions">

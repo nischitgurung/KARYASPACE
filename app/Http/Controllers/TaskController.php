@@ -8,18 +8,22 @@ use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
-    public function index(Space $space, Project $project)
-    {
-        $this->authorizeRole($space, ['Admin', 'Project Manager', 'Member']);
+   public function index(Space $space, Project $project)
+{
+    $this->authorizeRole($space, ['Admin', 'Project Manager', 'Member']);
 
-        if ($project->space_id !== $space->id) {
-            abort(404, 'Project does not belong to this space.');
-        }
-
-        $tasks = $project->tasks()->latest('due_date')->get();
-
-        return view('tasks.index', compact('space', 'project', 'tasks'));
+    if ($project->space_id !== $space->id) {
+        abort(404, 'Project does not belong to this space.');
     }
+
+    $tasks = $project->tasks()->latest('due_date')->get();
+
+    // Calculate total weightage of tasks in this project
+    $totalWeightage = $tasks->sum('weightage');
+
+    return view('tasks.index', compact('space', 'project', 'tasks', 'totalWeightage'));
+}
+
 
     public function create(Space $space, Project $project)
     {
@@ -27,59 +31,93 @@ class TaskController extends Controller
         return view('tasks.create', compact('space', 'project'));
     }
 
-    public function store(Request $request, Space $space, Project $project)
-    {
-        $this->authorizeRole($space, ['Admin', 'Project Manager']);
+   public function store(Request $request, Space $space, Project $project)
+{
+    // Validate input first
+    $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'status' => 'required|in:to_do,in_progress,done',
+        'priority' => 'nullable|in:low,medium,high,urgent',
+        'due_date' => 'nullable|date|after_or_equal:today',
+        'weightage' => 'required|integer|min:1|max:100',
+    ]);
 
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'due_date' => 'nullable|date|after_or_equal:today',
-            'priority' => 'nullable|in:low,medium,high',
-        ]);
+    $newWeightage = (int) $request->weightage;
 
-        $project->tasks()->create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'due_date' => $request->due_date,
-            'priority' => $request->priority,
-            'status' => 'pending',
-        ]);
+    // Calculate current total weightage of tasks in this project
+    $totalWeightage = $project->tasks()->sum('weightage');
 
-        return redirect()->route('tasks.index', [$space, $project])
-                         ->with('success', 'Task created successfully.');
+    if ($totalWeightage + $newWeightage > 100) {
+        return back()->withErrors([
+            'weightage' => 'Total weightage of all tasks cannot exceed 100%. You must reduce the weightage or create a new project.'
+        ])->withInput();
     }
+
+    // Proceed to create task if validation passes
+    $task = $project->tasks()->create([
+        'title' => $request->title,
+        'description' => $request->description,
+        'status' => $request->status,
+        'priority' => $request->priority,
+        'due_date' => $request->due_date,
+        'weightage' => $newWeightage,
+    ]);
+
+    return redirect()->route('spaces.projects.tasks.index', ['space' => $space->id, 'project' => $project->id])
+                     ->with('success', 'Task created successfully.');
+}
+
 
     public function edit(Space $space, Project $project, Task $task)
     {
         $this->authorizeRole($space, ['Admin', 'Project Manager']);
-        return view('tasks.edit', compact('space', 'project', 'task'));
-    }
+         return view('tasks.edit', compact('space', 'project', 'task'));    }
 
     public function update(Request $request, Space $space, Project $project, Task $task)
-    {
-        $this->authorizeRole($space, ['Admin', 'Project Manager']);
+{
+    $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'status' => 'required|in:to_do,in_progress,done',
+        'priority' => 'nullable|in:low,medium,high,urgent',
+        'due_date' => 'nullable|date|after_or_equal:today',
+        'weightage' => 'required|integer|min:1|max:100',
+    ]);
 
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'due_date' => 'nullable|date|after_or_equal:today',
-            'priority' => 'nullable|in:low,medium,high',
-            'status' => 'required|in:pending,in_progress,completed',
-        ]);
+    $newWeightage = (int) $request->weightage;
 
-        $task->update($request->only(['title', 'description', 'due_date', 'priority', 'status']));
+    // Sum all tasks' weightage except current task
+    $totalWeightageExcludingCurrent = $project->tasks()
+        ->where('id', '!=', $task->id)
+        ->sum('weightage');
 
-        return redirect()->route('tasks.index', [$space, $project])
-                         ->with('success', 'Task updated successfully.');
+    if ($totalWeightageExcludingCurrent + $newWeightage > 100) {
+        return back()->withErrors([
+            'weightage' => 'Total weightage of all tasks cannot exceed 100%. Please adjust the weightage.'
+        ])->withInput();
     }
+
+    $task->update([
+        'title' => $request->title,
+        'description' => $request->description,
+        'status' => $request->status,
+        'priority' => $request->priority,
+        'due_date' => $request->due_date,
+        'weightage' => $newWeightage,
+    ]);
+
+    return redirect()->route('spaces.projects.tasks.index', ['space' => $space->id, 'project' => $project->id])
+                     ->with('success', 'Task updated successfully.');
+}
+
 
     public function destroy(Space $space, Project $project, Task $task)
     {
         $this->authorizeRole($space, ['Admin', 'Project Manager']);
         $task->delete();
 
-        return redirect()->route('tasks.index', [$space, $project])
+        return redirect()->route('spaces.projects.tasks.index', [$space, $project])
                          ->with('success', 'Task deleted successfully.');
     }
 
@@ -99,7 +137,7 @@ class TaskController extends Controller
         }
 
         $request->validate([
-            'status' => 'required|in:pending,in_progress,completed',
+            'status' => 'required|in:to_do,in_progress,done',
         ]);
 
         $task->status = $request->status;

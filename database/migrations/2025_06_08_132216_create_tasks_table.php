@@ -20,7 +20,7 @@ return new class extends Migration
     $table->unsignedBigInteger('project_id')->nullable();
     $table->unsignedBigInteger('assigned_to')->nullable();
     $table->timestamps();
-
+    $table->integer('weightage')->default(1); // default weightage 1
     // Optional: If you have users and projects tables
     $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
     $table->foreign('assigned_to')->references('id')->on('users')->onDelete('set null');

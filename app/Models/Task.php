@@ -10,7 +10,20 @@ class Task extends Model
     use HasFactory;
 
     // Define the fillable attributes for mass assignment
-    protected $fillable = ['title', 'description', 'status', 'priority', 'due_date', 'project_id'];
+    protected $fillable = [
+        'title',
+        'description',
+        'status',
+        'priority',
+        'due_date',
+        'project_id',
+        'weightage',  // Added weightage here
+    ];
+
+    // Cast attributes to specific types
+    protected $casts = [
+        'weightage' => 'integer',
+    ];
 
     /**
      * Get the project that owns the task.
